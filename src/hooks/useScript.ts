@@ -8,7 +8,7 @@ function createTextBubble(content: string): Bubble {
     id: generateId(),
     type: 'text',
     content,
-    durationSeconds: Math.max(estimateDuration(content), 2),
+    durationSeconds: Math.max(estimateDuration(content), 1),
   };
 }
 
@@ -22,16 +22,20 @@ function createFillerBubble(duration = 1.5): Bubble {
   };
 }
 
+function createVisualBubble(content: string): Bubble {
+  return {
+    id: generateId(),
+    type: 'text',
+    content,
+    durationSeconds: 0,
+  };
+}
+
 function createPair(text: string, visual: string): BubblePair {
   return {
     id: generateId(),
     text: createTextBubble(text),
-    visual: {
-      id: generateId(),
-      type: 'text',
-      content: visual,
-      durationSeconds: 0, // visual duration follows text bubble
-    },
+    visual: createVisualBubble(visual),
   };
 }
 
@@ -43,10 +47,6 @@ function createDefaultScript(): Script {
       createPair(
         'Your opening line goes here...',
         'Describe the opening visual...'
-      ),
-      createPair(
-        'Continue your script here...',
-        'Describe what the viewer sees...'
       ),
     ],
   };
@@ -75,7 +75,7 @@ export function useScript(initial?: Script) {
                 content,
                 durationSeconds: p.text.manualDuration
                   ? p.text.durationSeconds
-                  : Math.max(estimateDuration(content), 2),
+                  : Math.max(estimateDuration(content), 1),
               },
             }
           : p
@@ -115,7 +115,6 @@ export function useScript(initial?: Script) {
     []
   );
 
-  /** Split a text bubble at a character offset. Creates two pairs from one. */
   const splitBubble = useCallback(
     (pairId: string, charOffset: number) => {
       setScript((prev) => {
@@ -126,9 +125,8 @@ export function useScript(initial?: Script) {
         const textBefore = pair.text.content.slice(0, charOffset).trim();
         const textAfter = pair.text.content.slice(charOffset).trim();
 
-        if (!textBefore || !textAfter) return prev; // Don't split at edges
+        if (!textBefore || !textAfter) return prev;
 
-        // Split visual content at roughly proportional position
         const ratio = charOffset / pair.text.content.length;
         const visualSplitPos = Math.round(pair.visual.content.length * ratio);
         const visualBefore = pair.visual.content.slice(0, visualSplitPos).trim();
@@ -146,13 +144,13 @@ export function useScript(initial?: Script) {
     []
   );
 
-  /** Insert a filler/pause pair at a given index */
+  /** Insert a filler/pause pair. Text side is filler, visual side is always editable. */
   const insertFiller = useCallback((atIndex: number) => {
     setScript((prev) => {
       const fillerPair: BubblePair = {
         id: generateId(),
         text: createFillerBubble(),
-        visual: createFillerBubble(),
+        visual: createVisualBubble(''),
       };
       const newPairs = [...prev.pairs];
       newPairs.splice(atIndex, 0, fillerPair);
@@ -160,7 +158,6 @@ export function useScript(initial?: Script) {
     });
   }, []);
 
-  /** Delete a pair by id */
   const deletePair = useCallback((pairId: string) => {
     setScript((prev) => ({
       ...prev,
