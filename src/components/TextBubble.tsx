@@ -7,6 +7,7 @@ interface TextBubbleProps {
   durationSeconds: number;
   isFiller: boolean;
   onContentChange: (content: string) => void;
+  onCommit: () => void;
   onSplit: (charOffset: number) => void;
   onDurationChange: (seconds: number) => void;
   cumulativeTime: number;
@@ -17,6 +18,7 @@ export function TextBubble({
   durationSeconds,
   isFiller,
   onContentChange,
+  onCommit,
   onSplit,
   onDurationChange,
   cumulativeTime,
@@ -125,6 +127,7 @@ export function TextBubble({
         ref={textareaRef}
         value={content}
         onChange={(e) => onContentChange(e.target.value)}
+        onBlur={onCommit}
         className={`w-full bg-transparent text-sm outline-none resize-none leading-relaxed overflow-hidden ${
           dark ? 'text-slate-200' : 'text-slate-700'
         }`}

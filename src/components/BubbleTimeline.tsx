@@ -10,6 +10,7 @@ interface BubbleTimelineProps {
   pairs: BubblePair[];
   totalDuration: number;
   onUpdateText: (pairId: string, content: string) => void;
+  onCommitText: (pairId: string) => void;
   onUpdateVisual: (pairId: string, content: string) => void;
   onSplit: (pairId: string, charOffset: number) => void;
   onInsertFiller: (atIndex: number) => void;
@@ -23,6 +24,7 @@ export function BubbleTimeline({
   pairs,
   totalDuration,
   onUpdateText,
+  onCommitText,
   onUpdateVisual,
   onSplit,
   onInsertFiller,
@@ -62,10 +64,13 @@ export function BubbleTimeline({
   const overBudget = textDuration > totalDuration;
   const effectiveTotal = Math.max(textDuration, totalDuration);
 
-  // Proportional min-heights
+  // Min-heights: proportional for fillers, small fixed for text pairs
   const pairMinHeights = pairs.map((p) => {
-    const fraction = p.text.durationSeconds / effectiveTotal;
-    return Math.max(48, fraction * containerHeight);
+    if (p.text.type === 'filler') {
+      const fraction = p.text.durationSeconds / effectiveTotal;
+      return Math.max(48, fraction * containerHeight);
+    }
+    return 48;
   });
 
   const fillerMinHeight = remainingTime > 0
@@ -103,7 +108,7 @@ export function BubbleTimeline({
 
   return (
     <div className="flex flex-1 overflow-hidden flex-col">
-      <div ref={scrollRef} className={`flex-1 overflow-y-auto flex flex-col ${scrollbarClass}`}>
+      <div ref={scrollRef} className={`flex-1 overflow-y-auto flex flex-col ${scrollbarClass}`} style={{ scrollbarGutter: 'stable' }}>
         <div
           style={{
             height: scale < 1 ? naturalHeight * scale : undefined,
@@ -166,6 +171,7 @@ export function BubbleTimeline({
                       durationSeconds={pair.text.durationSeconds}
                       isFiller={pair.text.type === 'filler'}
                       onContentChange={(c) => onUpdateText(pair.id, c)}
+                      onCommit={() => onCommitText(pair.id)}
                       onSplit={(offset) => onSplit(pair.id, offset)}
                       onDurationChange={(d) => onUpdateDuration(pair.id, 'text', d)}
                       cumulativeTime={cumulativeTimes[i]}

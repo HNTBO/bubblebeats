@@ -60,19 +60,29 @@ export function useScript(initial?: Script) {
     setScript((prev) => ({ ...prev, totalDurationSeconds }));
   }, []);
 
+  // Content-only update (no duration recalculation) — called on every keystroke
   const updatePairText = useCallback((pairId: string, content: string) => {
     setScript((prev) => ({
       ...prev,
       pairs: prev.pairs.map((p) =>
         p.id === pairId
+          ? { ...p, text: { ...p.text, content } }
+          : p
+      ),
+    }));
+  }, []);
+
+  // Recalculate duration from current content — called on blur
+  const commitPairText = useCallback((pairId: string) => {
+    setScript((prev) => ({
+      ...prev,
+      pairs: prev.pairs.map((p) =>
+        p.id === pairId && !p.text.manualDuration
           ? {
               ...p,
               text: {
                 ...p.text,
-                content,
-                durationSeconds: p.text.manualDuration
-                  ? p.text.durationSeconds
-                  : Math.max(estimateDuration(content), 0.5),
+                durationSeconds: Math.max(estimateDuration(p.text.content), 0.5),
               },
             }
           : p
@@ -167,6 +177,7 @@ export function useScript(initial?: Script) {
     setTitle,
     setTotalDuration,
     updatePairText,
+    commitPairText,
     updatePairVisual,
     updateBubbleDuration,
     splitBubble,

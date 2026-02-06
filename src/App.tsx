@@ -13,6 +13,7 @@ function AppContent() {
     setTitle,
     setTotalDuration,
     updatePairText,
+    commitPairText,
     updatePairVisual,
     updateBubbleDuration,
     splitBubble,
@@ -40,6 +41,7 @@ function AppContent() {
         pairs={script.pairs}
         totalDuration={script.totalDurationSeconds}
         onUpdateText={updatePairText}
+        onCommitText={commitPairText}
         onUpdateVisual={updatePairVisual}
         onSplit={splitBubble}
         onInsertFiller={insertFiller}
