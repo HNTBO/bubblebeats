@@ -34,6 +34,7 @@ function AppContent() {
         onTitleChange={setTitle}
         onDurationChange={setTotalDuration}
         onImport={setScript}
+        script={script}
       />
       <BubbleTimeline
         pairs={script.pairs}

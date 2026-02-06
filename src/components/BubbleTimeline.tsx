@@ -17,7 +17,6 @@ interface BubbleTimelineProps {
   onDeletePair: (pairId: string) => void;
 }
 
-// Uniform gap used between rows AND between columns
 const GAP_PX = 8;
 
 export function BubbleTimeline({
@@ -37,7 +36,6 @@ export function BubbleTimeline({
   const [containerHeight, setContainerHeight] = useState(600);
   const [naturalHeight, setNaturalHeight] = useState(0);
 
-  // Measure scroll container height + natural content height via ResizeObserver
   useEffect(() => {
     const scrollEl = scrollRef.current;
     const contentEl = contentRef.current;
@@ -64,7 +62,7 @@ export function BubbleTimeline({
   const overBudget = textDuration > totalDuration;
   const effectiveTotal = Math.max(textDuration, totalDuration);
 
-  // Proportional min-heights for each pair row
+  // Proportional min-heights
   const pairMinHeights = pairs.map((p) => {
     const fraction = p.text.durationSeconds / effectiveTotal;
     return Math.max(48, fraction * containerHeight);
@@ -74,7 +72,7 @@ export function BubbleTimeline({
     ? Math.max(24, (remainingTime / effectiveTotal) * containerHeight)
     : 0;
 
-  // Cumulative times for TC display
+  // Cumulative times
   const cumulativeTimes: number[] = [];
   let runningTime = 0;
   for (const pair of pairs) {
@@ -82,8 +80,7 @@ export function BubbleTimeline({
     runningTime += pair.text.durationSeconds;
   }
 
-  // Zoom: uniform scaling from center
-  // slider 0 = scale 1 (fill width), slider 1 = fit everything in viewport
+  // Zoom
   const fitScale = naturalHeight > containerHeight && containerHeight > 0
     ? containerHeight / naturalHeight
     : 1;
@@ -106,9 +103,7 @@ export function BubbleTimeline({
 
   return (
     <div className="flex flex-1 overflow-hidden flex-col">
-      {/* Scrollable + zoomable area */}
       <div ref={scrollRef} className={`flex-1 overflow-y-auto flex flex-col ${scrollbarClass}`}>
-        {/* Centering wrapper: when scaled content < viewport, center it */}
         <div
           style={{
             height: scale < 1 ? naturalHeight * scale : undefined,
@@ -117,7 +112,6 @@ export function BubbleTimeline({
             margin: scale < 1 && naturalHeight * scale < containerHeight ? 'auto 0' : undefined,
           }}
         >
-          {/* Scaled content */}
           <div
             ref={contentRef}
             style={{
@@ -126,91 +120,92 @@ export function BubbleTimeline({
             }}
           >
             {/* Column headers */}
-            <div className="flex px-4 py-2" style={{ gap: GAP_PX }}>
-              <div className={`flex-1 text-center ${dark ? 'bg-slate-950' : 'bg-slate-50'}`}>
+            <div className="grid grid-cols-2 px-4 py-2" style={{ gap: GAP_PX }}>
+              <div className={`text-center ${dark ? 'bg-slate-950' : 'bg-slate-50'}`}>
                 <span className={`text-xs font-medium uppercase tracking-wider ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
                   Voice
                 </span>
               </div>
-              <div className={`flex-1 text-center ${dark ? 'bg-slate-950' : 'bg-slate-50'}`}>
+              <div className={`text-center ${dark ? 'bg-slate-950' : 'bg-slate-50'}`}>
                 <span className={`text-xs font-medium uppercase tracking-wider ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
                   Visual
                 </span>
               </div>
             </div>
 
-            {/* Pairs with separators */}
+            {/* Pairs */}
             <div className="flex flex-col px-4 pb-4">
               {pairs.map((pair, i) => (
                 <Fragment key={pair.id}>
-                  {/* Separator with centered + icon */}
+                  {/* Separator: + icon centered in voice column area */}
                   {i > 0 && (
-                    <div
-                      className="relative flex items-center justify-center cursor-pointer group/boundary"
-                      style={{ height: GAP_PX }}
-                      onClick={(e) => handleBoundaryClick(e, i)}
-                    >
-                      <div className="absolute -top-2 -bottom-2 left-0 right-0 flex items-center justify-center z-10">
-                        <div className={`rounded-full p-0.5 opacity-0 group-hover/boundary:opacity-100 transition-opacity ${
-                          dark ? 'bg-slate-800 shadow-sm' : 'bg-white shadow-sm'
-                        }`}>
-                          <Plus size={12} className={dark ? 'text-slate-400' : 'text-slate-500'} />
+                    <div className="grid grid-cols-2" style={{ gap: GAP_PX, height: GAP_PX }}>
+                      <div
+                        className="relative cursor-pointer group/boundary"
+                        onClick={(e) => handleBoundaryClick(e, i)}
+                      >
+                        <div className="absolute -top-2 -bottom-2 left-0 right-0 flex items-center justify-center z-10">
+                          <div className={`rounded-full p-0.5 opacity-0 group-hover/boundary:opacity-100 transition-opacity ${
+                            dark ? 'bg-slate-800 shadow-sm' : 'bg-white shadow-sm'
+                          }`}>
+                            <Plus size={12} className={dark ? 'text-slate-400' : 'text-slate-500'} />
+                          </div>
                         </div>
                       </div>
+                      <div />
                     </div>
                   )}
 
-                  {/* Pair row: flex syncs height between voice and visual */}
-                  <div className="flex" style={{ gap: GAP_PX, minHeight: pairMinHeights[i] }}>
-                    <div className="flex-1">
-                      <TextBubble
-                        content={pair.text.content}
-                        durationSeconds={pair.text.durationSeconds}
-                        isFiller={pair.text.type === 'filler'}
-                        onContentChange={(c) => onUpdateText(pair.id, c)}
-                        onSplit={(offset) => onSplit(pair.id, offset)}
-                        onDurationChange={(d) => onUpdateDuration(pair.id, 'text', d)}
-                        cumulativeTime={cumulativeTimes[i]}
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <VisualBubble
-                        content={pair.visual.content}
-                        onContentChange={(c) => onUpdateVisual(pair.id, c)}
-                      />
-                    </div>
+                  {/* Pair row: CSS Grid syncs height between voice and visual */}
+                  <div
+                    className="grid grid-cols-2 items-stretch"
+                    style={{ gap: GAP_PX, minHeight: pairMinHeights[i] }}
+                  >
+                    <TextBubble
+                      content={pair.text.content}
+                      durationSeconds={pair.text.durationSeconds}
+                      isFiller={pair.text.type === 'filler'}
+                      onContentChange={(c) => onUpdateText(pair.id, c)}
+                      onSplit={(offset) => onSplit(pair.id, offset)}
+                      onDurationChange={(d) => onUpdateDuration(pair.id, 'text', d)}
+                      cumulativeTime={cumulativeTimes[i]}
+                    />
+                    <VisualBubble
+                      content={pair.visual.content}
+                      onContentChange={(c) => onUpdateVisual(pair.id, c)}
+                      showPlaceholder={i === 0}
+                    />
                   </div>
                 </Fragment>
               ))}
 
-              {/* Gap before filler */}
+              {/* Filler: remaining time */}
               {fillerMinHeight > 0 && (
                 <>
                   <div style={{ height: GAP_PX }} />
-                  <div className="flex" style={{ gap: GAP_PX, minHeight: fillerMinHeight }}>
-                    <div className="flex-1">
-                      <div className={`min-h-full rounded-3xl border border-dashed flex items-center justify-center select-none ${
-                        dark
-                          ? 'border-slate-700 bg-slate-900/40'
-                          : 'border-slate-200 bg-slate-50/60'
-                      }`}>
-                        <span className={`text-[10px] uppercase tracking-wider ${dark ? 'text-slate-600' : 'text-slate-400'}`}>
-                          {formatTime(remainingTime)} remaining
-                        </span>
-                      </div>
+                  <div
+                    className="grid grid-cols-2 items-stretch"
+                    style={{ gap: GAP_PX, minHeight: fillerMinHeight }}
+                  >
+                    <div className={`rounded-3xl border border-dashed flex items-center justify-center select-none ${
+                      dark
+                        ? 'border-slate-700 bg-slate-900/40'
+                        : 'border-slate-200 bg-slate-50/60'
+                    }`}>
+                      <span className={`text-[10px] uppercase tracking-wider ${dark ? 'text-slate-600' : 'text-slate-400'}`}>
+                        {formatTime(remainingTime)} remaining
+                      </span>
                     </div>
-                    <div className="flex-1">
-                      <div className={`min-h-full rounded-3xl border border-dashed ${
-                        dark
-                          ? 'border-slate-700 bg-slate-900/40'
-                          : 'border-slate-200 bg-slate-50/60'
-                      }`} />
-                    </div>
+                    <div className={`rounded-3xl border border-dashed ${
+                      dark
+                        ? 'border-slate-700 bg-slate-900/40'
+                        : 'border-slate-200 bg-slate-50/60'
+                    }`} />
                   </div>
                 </>
               )}
 
-              {/* Over budget warning */}
+              {/* Over budget */}
               {overBudget && (
                 <div className="pt-2">
                   <div className={`rounded-3xl border border-dashed flex items-center justify-center py-2 ${

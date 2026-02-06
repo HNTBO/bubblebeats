@@ -3,6 +3,7 @@ import { Clock, Menu, FileDown, FileUp, Moon, Sun, Info, EyeOff } from 'lucide-r
 import { formatTime } from '../utils/timing';
 import { useSettings } from '../hooks/useSettings';
 import { parseScriptMarkdown } from '../utils/parseMarkdown';
+import { exportToMarkdown, exportToJson, downloadFile } from '../utils/exportMarkdown';
 import type { Script } from '../types/script';
 
 interface HeaderProps {
@@ -12,6 +13,7 @@ interface HeaderProps {
   onTitleChange: (title: string) => void;
   onDurationChange: (seconds: number) => void;
   onImport: (script: Script) => void;
+  script: Script;
 }
 
 export function Header({
@@ -21,9 +23,11 @@ export function Header({
   onTitleChange,
   onDurationChange,
   onImport,
+  script,
 }: HeaderProps) {
   const { settings, toggleTheme, toggleInfoMode, setZoom } = useSettings();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [exportMenuOpen, setExportMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const overflow = currentDuration > totalDuration;
@@ -33,6 +37,7 @@ export function Header({
     function handleClickOutside(e: MouseEvent) {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         setMenuOpen(false);
+        setExportMenuOpen(false);
       }
     }
     if (menuOpen) document.addEventListener('mousedown', handleClickOutside);
@@ -53,17 +58,31 @@ export function Header({
       reader.onload = (ev) => {
         const content = ev.target?.result as string;
         if (content) {
-          const script = parseScriptMarkdown(content);
-          onImport(script);
+          const parsed = parseScriptMarkdown(content);
+          onImport(parsed);
         }
       };
       reader.readAsText(file);
-
-      // Reset input so the same file can be re-imported
       e.target.value = '';
     },
     [onImport]
   );
+
+  const handleExportMarkdown = useCallback(() => {
+    const md = exportToMarkdown(script);
+    const filename = script.title.replace(/[^a-zA-Z0-9-_ ]/g, '').replace(/\s+/g, '-').toLowerCase();
+    downloadFile(md, `${filename || 'script'}.md`, 'text/markdown');
+    setMenuOpen(false);
+    setExportMenuOpen(false);
+  }, [script]);
+
+  const handleExportJson = useCallback(() => {
+    const json = exportToJson(script);
+    const filename = script.title.replace(/[^a-zA-Z0-9-_ ]/g, '').replace(/\s+/g, '-').toLowerCase();
+    downloadFile(json, `${filename || 'script'}.json`, 'application/json');
+    setMenuOpen(false);
+    setExportMenuOpen(false);
+  }, [script]);
 
   return (
     <header className={`flex items-center gap-4 border-b px-6 py-3 ${
@@ -108,7 +127,7 @@ export function Header({
 
       <div className={`mx-1 h-6 w-px ${dark ? 'bg-slate-700' : 'bg-slate-200'}`} />
 
-      {/* Duration display */}
+      {/* Duration */}
       <div className="flex items-center gap-2 text-sm">
         <Clock size={14} className={dark ? 'text-slate-400' : 'text-slate-500'} />
         <span className={overflow ? 'text-red-500 font-medium' : dark ? 'text-slate-300' : 'text-slate-600'}>
@@ -130,7 +149,6 @@ export function Header({
         <span className={`text-xs ${dark ? 'text-slate-500' : 'text-slate-400'}`}>sec</span>
       </div>
 
-      {/* Hidden file input for import */}
       <input
         ref={fileInputRef}
         type="file"
@@ -167,15 +185,39 @@ export function Header({
               <FileUp size={15} />
               Import script...
             </button>
-            <button
-              className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
-                dark ? 'text-slate-300 hover:bg-slate-700' : 'text-slate-700 hover:bg-slate-50'
-              }`}
-              onClick={() => { /* TODO: export */ setMenuOpen(false); }}
-            >
-              <FileDown size={15} />
-              Export...
-            </button>
+
+            {/* Export submenu */}
+            <div className="relative">
+              <button
+                className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
+                  dark ? 'text-slate-300 hover:bg-slate-700' : 'text-slate-700 hover:bg-slate-50'
+                }`}
+                onClick={() => setExportMenuOpen(!exportMenuOpen)}
+              >
+                <FileDown size={15} />
+                Export...
+              </button>
+              {exportMenuOpen && (
+                <div className={`ml-4 border-l pl-2 ${dark ? 'border-slate-700' : 'border-slate-200'}`}>
+                  <button
+                    className={`w-full text-left px-3 py-2 text-sm transition-colors rounded ${
+                      dark ? 'text-slate-300 hover:bg-slate-700' : 'text-slate-700 hover:bg-slate-50'
+                    }`}
+                    onClick={handleExportMarkdown}
+                  >
+                    Markdown (.md)
+                  </button>
+                  <button
+                    className={`w-full text-left px-3 py-2 text-sm transition-colors rounded ${
+                      dark ? 'text-slate-300 hover:bg-slate-700' : 'text-slate-700 hover:bg-slate-50'
+                    }`}
+                    onClick={handleExportJson}
+                  >
+                    JSON (.json)
+                  </button>
+                </div>
+              )}
+            </div>
 
             <div className={`my-1 h-px ${dark ? 'bg-slate-700' : 'bg-slate-100'}`} />
 
