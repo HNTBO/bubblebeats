@@ -1,4 +1,4 @@
-import { useRef, useCallback } from 'react';
+import { useRef, useCallback, useLayoutEffect } from 'react';
 import { formatTime, countWords, estimateDuration } from '../utils/timing';
 import { useSettings } from '../hooks/useSettings';
 
@@ -10,7 +10,6 @@ interface TextBubbleProps {
   onSplit: (charOffset: number) => void;
   onDurationChange: (seconds: number) => void;
   cumulativeTime: number;
-  height: number;
 }
 
 export function TextBubble({
@@ -21,11 +20,18 @@ export function TextBubble({
   onSplit,
   onDurationChange,
   cumulativeTime,
-  height,
 }: TextBubbleProps) {
   const { settings } = useSettings();
   const dark = settings.theme === 'dark';
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Auto-grow textarea so text is always fully visible
+  useLayoutEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = '0';
+    el.style.height = el.scrollHeight + 'px';
+  }, [content]);
 
   const handleClick = useCallback(
     (e: React.MouseEvent) => {
@@ -67,9 +73,9 @@ export function TextBubble({
 
   if (isFiller) {
     return (
-      <div className="h-full relative group">
+      <div className="min-h-full relative group">
         <div
-          className={`h-full rounded-3xl border border-dashed flex items-center justify-center cursor-ns-resize select-none ${
+          className={`min-h-full rounded-3xl border border-dashed flex items-center justify-center cursor-ns-resize select-none ${
             dark
               ? 'border-slate-600 bg-slate-800/30'
               : 'border-slate-300 bg-slate-50'
@@ -94,9 +100,9 @@ export function TextBubble({
   const overBudget = neededDuration > durationSeconds && durationSeconds > 0;
 
   return (
-    <div className="h-full relative group" style={{ minHeight: height }}>
+    <div className="min-h-full relative group">
       <div
-        className={`h-full rounded-3xl border p-4 flex flex-col transition-colors ${
+        className={`min-h-full rounded-3xl border p-4 flex flex-col transition-colors ${
           overBudget
             ? dark
               ? 'border-red-500/60 bg-red-950/20 shadow-[0_0_8px_rgba(239,68,68,0.15)]'
@@ -107,7 +113,6 @@ export function TextBubble({
         }`}
         onClick={handleClick}
       >
-        {/* TC in top-right */}
         {settings.infoMode && (
           <span className={`absolute top-2 right-3 text-[9px] font-mono ${dark ? 'text-slate-600' : 'text-slate-400'}`}>
             {formatTime(cumulativeTime)}
@@ -118,7 +123,7 @@ export function TextBubble({
           ref={textareaRef}
           value={content}
           onChange={(e) => onContentChange(e.target.value)}
-          className={`w-full flex-1 bg-transparent text-sm outline-none resize-none leading-relaxed overflow-auto ${
+          className={`w-full bg-transparent text-sm outline-none resize-none leading-relaxed overflow-hidden ${
             dark ? 'text-slate-200' : 'text-slate-700'
           }`}
           placeholder="Type your voiceover text..."

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Clock, Menu, FileDown, FileUp, Moon, Sun, Info, EyeOff, ZoomIn, ZoomOut } from 'lucide-react';
+import { Clock, Menu, FileDown, FileUp, Moon, Sun, Info, EyeOff } from 'lucide-react';
 import { formatTime } from '../utils/timing';
 import { useSettings } from '../hooks/useSettings';
 import { parseScriptMarkdown } from '../utils/parseMarkdown';
@@ -93,7 +93,7 @@ export function Header({
 
       {/* Zoom slider */}
       <div className="flex items-center gap-2">
-        <ZoomOut size={13} className={dark ? 'text-slate-500' : 'text-slate-400'} />
+        <span className={`text-[10px] ${dark ? 'text-slate-500' : 'text-slate-400'}`}>100%</span>
         <input
           type="range"
           min={0}
@@ -103,7 +103,7 @@ export function Header({
           onChange={(e) => setZoom(Number(e.target.value))}
           className="w-20 h-1 accent-sky-500"
         />
-        <ZoomIn size={13} className={dark ? 'text-slate-500' : 'text-slate-400'} />
+        <span className={`text-[10px] ${dark ? 'text-slate-500' : 'text-slate-400'}`}>Fit</span>
       </div>
 
       <div className={`mx-1 h-6 w-px ${dark ? 'bg-slate-700' : 'bg-slate-200'}`} />
