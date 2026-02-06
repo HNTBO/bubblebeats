@@ -9,6 +9,7 @@ function AppContent() {
 
   const {
     script,
+    setScript,
     setTitle,
     setTotalDuration,
     updatePairText,
@@ -32,6 +33,7 @@ function AppContent() {
         currentDuration={currentDuration}
         onTitleChange={setTitle}
         onDurationChange={setTotalDuration}
+        onImport={setScript}
       />
       <BubbleTimeline
         pairs={script.pairs}

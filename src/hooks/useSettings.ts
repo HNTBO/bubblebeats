@@ -3,23 +3,27 @@ import { useState, useCallback, createContext, useContext } from 'react';
 export interface Settings {
   theme: 'light' | 'dark';
   infoMode: boolean;
+  zoom: number; // 0 = fill width (may scroll), 1 = fit height (no scroll)
 }
 
 interface SettingsContext {
   settings: Settings;
   toggleTheme: () => void;
   toggleInfoMode: () => void;
+  setZoom: (zoom: number) => void;
 }
 
 const defaultSettings: Settings = {
   theme: 'light',
   infoMode: true,
+  zoom: 0,
 };
 
 export const SettingsContext = createContext<SettingsContext>({
   settings: defaultSettings,
   toggleTheme: () => {},
   toggleInfoMode: () => {},
+  setZoom: () => {},
 });
 
 export function useSettingsProvider(): SettingsContext {
@@ -30,7 +34,7 @@ export function useSettingsProvider(): SettingsContext {
         const parsed = JSON.parse(saved);
         // migrate old "minimal" key
         if ('minimal' in parsed) {
-          return { theme: parsed.theme ?? 'light', infoMode: !parsed.minimal };
+          return { theme: parsed.theme ?? 'light', infoMode: !parsed.minimal, zoom: 0 };
         }
         return { ...defaultSettings, ...parsed };
       }
@@ -51,7 +55,11 @@ export function useSettingsProvider(): SettingsContext {
     save({ ...settings, infoMode: !settings.infoMode });
   }, [settings, save]);
 
-  return { settings, toggleTheme, toggleInfoMode };
+  const setZoom = useCallback((zoom: number) => {
+    save({ ...settings, zoom: Math.max(0, Math.min(1, zoom)) });
+  }, [settings, save]);
+
+  return { settings, toggleTheme, toggleInfoMode, setZoom };
 }
 
 export function useSettings() {
