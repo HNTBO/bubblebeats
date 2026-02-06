@@ -37,6 +37,7 @@ export function BubbleTimeline({
   const contentRef = useRef<HTMLDivElement>(null);
   const [containerHeight, setContainerHeight] = useState(600);
   const [naturalHeight, setNaturalHeight] = useState(0);
+  const [editingPairId, setEditingPairId] = useState<string | null>(null);
 
   useEffect(() => {
     const scrollEl = scrollRef.current;
@@ -94,15 +95,40 @@ export function BubbleTimeline({
     ? 1 + settings.zoom * (fitScale - 1)
     : 1;
 
-  const handleBoundaryClick = useCallback(
-    (e: React.MouseEvent, index: number) => {
-      if (e.ctrlKey) {
-        e.preventDefault();
-        onInsertFiller(index);
+  // Edit mode coordination
+  const enterEditMode = useCallback(
+    (pairId: string) => {
+      if (editingPairId && editingPairId !== pairId) {
+        onCommitText(editingPairId);
       }
+      setEditingPairId(pairId);
     },
-    [onInsertFiller]
+    [editingPairId, onCommitText]
   );
+
+  const exitEditMode = useCallback(() => {
+    if (editingPairId) {
+      onCommitText(editingPairId);
+    }
+    setEditingPairId(null);
+  }, [editingPairId, onCommitText]);
+
+  // Click-outside handler to exit edit mode
+  useEffect(() => {
+    if (!editingPairId) return;
+
+    function handleMouseDown(e: MouseEvent) {
+      const target = e.target as HTMLElement;
+      if (target.closest('[data-editing-bubble]')) return;
+      setEditingPairId((current) => {
+        if (current) onCommitText(current);
+        return null;
+      });
+    }
+
+    document.addEventListener('mousedown', handleMouseDown);
+    return () => document.removeEventListener('mousedown', handleMouseDown);
+  }, [editingPairId, onCommitText]);
 
   const scrollbarClass = `custom-scrollbar ${dark ? 'scrollbar-dark' : 'scrollbar-light'}`;
 
@@ -147,7 +173,7 @@ export function BubbleTimeline({
                     <div className="grid grid-cols-2" style={{ gap: GAP_PX, height: GAP_PX }}>
                       <div
                         className="relative cursor-pointer group/boundary"
-                        onClick={(e) => handleBoundaryClick(e, i)}
+                        onClick={() => onInsertFiller(i)}
                       >
                         <div className="absolute -top-2 -bottom-2 left-0 right-0 flex items-center justify-center z-10">
                           <div className={`rounded-full p-0.5 opacity-0 group-hover/boundary:opacity-100 transition-opacity ${
@@ -170,8 +196,10 @@ export function BubbleTimeline({
                       content={pair.text.content}
                       durationSeconds={pair.text.durationSeconds}
                       isFiller={pair.text.type === 'filler'}
+                      isEditing={pair.id === editingPairId}
                       onContentChange={(c) => onUpdateText(pair.id, c)}
-                      onCommit={() => onCommitText(pair.id)}
+                      onEnterEdit={() => enterEditMode(pair.id)}
+                      onExitEdit={exitEditMode}
                       onSplit={(offset) => onSplit(pair.id, offset)}
                       onDurationChange={(d) => onUpdateDuration(pair.id, 'text', d)}
                       cumulativeTime={cumulativeTimes[i]}

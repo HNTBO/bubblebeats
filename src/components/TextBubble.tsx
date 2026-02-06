@@ -1,4 +1,4 @@
-import { useRef, useCallback, useLayoutEffect } from 'react';
+import { useRef, useCallback, useLayoutEffect, useState } from 'react';
 import { formatTime, countWords, estimateDuration } from '../utils/timing';
 import { useSettings } from '../hooks/useSettings';
 
@@ -6,8 +6,10 @@ interface TextBubbleProps {
   content: string;
   durationSeconds: number;
   isFiller: boolean;
+  isEditing: boolean;
   onContentChange: (content: string) => void;
-  onCommit: () => void;
+  onEnterEdit: () => void;
+  onExitEdit: () => void;
   onSplit: (charOffset: number) => void;
   onDurationChange: (seconds: number) => void;
   cumulativeTime: number;
@@ -17,8 +19,10 @@ export function TextBubble({
   content,
   durationSeconds,
   isFiller,
+  isEditing,
   onContentChange,
-  onCommit,
+  onEnterEdit,
+  onExitEdit,
   onSplit,
   onDurationChange,
   cumulativeTime,
@@ -26,7 +30,26 @@ export function TextBubble({
   const { settings } = useSettings();
   const dark = settings.theme === 'dark';
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const bubbleRef = useRef<HTMLDivElement>(null);
+  const [editHeight, setEditHeight] = useState(0);
 
+  // Capture bubble height when entering edit mode (prevents shrink during editing)
+  useLayoutEffect(() => {
+    if (isEditing && bubbleRef.current) {
+      setEditHeight(bubbleRef.current.offsetHeight);
+    } else {
+      setEditHeight(0);
+    }
+  }, [isEditing]);
+
+  // Focus textarea when entering edit mode
+  useLayoutEffect(() => {
+    if (isEditing && textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  }, [isEditing]);
+
+  // Auto-resize textarea
   useLayoutEffect(() => {
     const el = textareaRef.current;
     if (!el) return;
@@ -34,9 +57,19 @@ export function TextBubble({
     el.style.height = el.scrollHeight + 'px';
   }, [content]);
 
+  const handleDoubleClick = useCallback(
+    (e: React.MouseEvent) => {
+      if (!isFiller) {
+        e.stopPropagation();
+        onEnterEdit();
+      }
+    },
+    [isFiller, onEnterEdit]
+  );
+
   const handleClick = useCallback(
     (e: React.MouseEvent) => {
-      if (e.ctrlKey && !isFiller && textareaRef.current) {
+      if (e.ctrlKey && isEditing && !isFiller && textareaRef.current) {
         e.preventDefault();
         const offset = textareaRef.current.selectionStart;
         if (offset > 0 && offset < content.length) {
@@ -44,7 +77,17 @@ export function TextBubble({
         }
       }
     },
-    [content, isFiller, onSplit]
+    [content, isEditing, isFiller, onSplit]
+  );
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Escape' && isEditing) {
+        e.preventDefault();
+        onExitEdit();
+      }
+    },
+    [isEditing, onExitEdit]
   );
 
   const handleMouseDown = useCallback(
@@ -89,7 +132,7 @@ export function TextBubble({
             {formatTime(cumulativeTime)}
           </span>
         )}
-        {/* Resize handle */}
+        {/* Resize handle — fillers only */}
         <div
           className="absolute bottom-0 left-4 right-4 h-3 cursor-ns-resize opacity-0 group-hover:opacity-100 transition-opacity z-10"
           onMouseDown={handleMouseDown}
@@ -106,16 +149,24 @@ export function TextBubble({
 
   return (
     <div
-      className={`relative group rounded-3xl border p-4 flex flex-col transition-colors ${
-        overBudget
+      ref={bubbleRef}
+      data-editing-bubble={isEditing || undefined}
+      className={`relative rounded-3xl border p-4 flex flex-col transition-colors ${
+        isEditing
           ? dark
-            ? 'border-red-500/60 bg-red-950/20 shadow-[0_0_8px_rgba(239,68,68,0.15)]'
-            : 'border-red-300 bg-red-50 shadow-[0_0_8px_rgba(239,68,68,0.1)]'
-          : dark
-            ? 'border-slate-600 bg-slate-800/50'
-            : 'border-slate-200 bg-white'
+            ? 'border-sky-500/60 bg-slate-800/50 shadow-[inset_0_0_12px_rgba(56,189,248,0.15)]'
+            : 'border-sky-400 bg-white shadow-[inset_0_0_12px_rgba(56,189,248,0.12)]'
+          : overBudget
+            ? dark
+              ? 'border-red-500/60 bg-red-950/20 shadow-[0_0_8px_rgba(239,68,68,0.15)]'
+              : 'border-red-300 bg-red-50 shadow-[0_0_8px_rgba(239,68,68,0.1)]'
+            : dark
+              ? 'border-slate-600 bg-slate-800/50'
+              : 'border-slate-200 bg-white'
       }`}
+      style={isEditing && editHeight > 0 ? { minHeight: editHeight } : undefined}
       onClick={handleClick}
+      onDoubleClick={handleDoubleClick}
     >
       {settings.infoMode && (
         <span className={`absolute top-2 right-3 text-[9px] font-mono ${dark ? 'text-slate-600' : 'text-slate-400'}`}>
@@ -127,11 +178,13 @@ export function TextBubble({
         ref={textareaRef}
         value={content}
         onChange={(e) => onContentChange(e.target.value)}
-        onBlur={onCommit}
+        onKeyDown={handleKeyDown}
+        readOnly={!isEditing}
         className={`w-full bg-transparent text-sm outline-none resize-none leading-relaxed overflow-hidden ${
           dark ? 'text-slate-200' : 'text-slate-700'
-        }`}
+        } ${!isEditing ? 'cursor-default pointer-events-none' : ''}`}
         placeholder="Type your voiceover text..."
+        tabIndex={isEditing ? 0 : -1}
       />
 
       {settings.infoMode && (
@@ -144,14 +197,6 @@ export function TextBubble({
           </span>
         </div>
       )}
-
-      {/* Resize handle */}
-      <div
-        className="absolute bottom-0 left-4 right-4 h-3 cursor-ns-resize opacity-0 group-hover:opacity-100 transition-opacity z-10"
-        onMouseDown={handleMouseDown}
-      >
-        <div className={`mx-auto w-8 h-0.5 rounded mt-1 ${dark ? 'bg-slate-500' : 'bg-slate-300'}`} />
-      </div>
     </div>
   );
 }
