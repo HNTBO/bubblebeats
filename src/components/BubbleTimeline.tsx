@@ -4,7 +4,7 @@ import { TextBubble } from './TextBubble';
 import { VisualBubble } from './VisualBubble';
 import { formatTime } from '../utils/timing';
 import { useSettings } from '../hooks/useSettings';
-import { Plus } from 'lucide-react';
+import { Plus, Scissors } from 'lucide-react';
 
 interface BubbleTimelineProps {
   pairs: BubblePair[];
@@ -20,6 +20,7 @@ interface BubbleTimelineProps {
   onMergePairDown: (pairId: string) => void;
   onMergeVisualUp: (pairId: string) => void;
   onMergeVisualDown: (pairId: string) => void;
+  onSplitVisualSpan: (atPairIndex: number) => void;
 }
 
 const GAP_PX = 8;
@@ -38,6 +39,7 @@ export function BubbleTimeline({
   onMergePairDown,
   onMergeVisualUp,
   onMergeVisualDown,
+  onSplitVisualSpan,
 }: BubbleTimelineProps) {
   const { settings } = useSettings();
   const dark = settings.theme === 'dark';
@@ -161,7 +163,7 @@ export function BubbleTimeline({
     const sepRow = 2 * i + 1;
     const contentRow = 2 * i + 2;
 
-    // Separator + button (voice column only)
+    // Separator + button (voice column)
     gridItems.push(
       <div
         key={`sep-${pair.id}`}
@@ -179,10 +181,31 @@ export function BubbleTimeline({
       </div>
     );
 
+    // Visual column separator: split button when facing a span
+    if (pair.visualSpan === 0) {
+      gridItems.push(
+        <div
+          key={`vsep-${pair.id}`}
+          className="relative cursor-pointer group/vsplit"
+          style={{ gridColumn: 2, gridRow: sepRow }}
+          onClick={() => onSplitVisualSpan(i)}
+        >
+          <div className="absolute -top-2 -bottom-2 left-0 right-0 flex items-center justify-center z-10">
+            <div className={`rounded-full p-0.5 opacity-0 group-hover/vsplit:opacity-100 transition-opacity ${
+              dark ? 'bg-emerald-900 shadow-sm' : 'bg-emerald-50 shadow-sm'
+            }`}>
+              <Scissors size={12} className={dark ? 'text-emerald-400' : 'text-emerald-600'} />
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     // Text bubble (voice column)
     gridItems.push(
       <div
         key={`text-${pair.id}`}
+        className="h-full"
         style={{ gridColumn: 1, gridRow: contentRow }}
       >
         <TextBubble

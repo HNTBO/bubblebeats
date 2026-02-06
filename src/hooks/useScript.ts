@@ -105,18 +105,19 @@ export function useScript(initial?: Script) {
     (pairId: string, side: 'text' | 'visual', durationSeconds: number) => {
       setScript((prev) => ({
         ...prev,
-        pairs: prev.pairs.map((p) =>
-          p.id === pairId
-            ? {
-                ...p,
-                [side]: {
-                  ...p[side],
-                  durationSeconds,
-                  manualDuration: true,
-                },
-              }
-            : p
-        ),
+        pairs: prev.pairs.map((p) => {
+          if (p.id !== pairId) return p;
+          // Enforce 1s minimum for fillers
+          const min = p.text.type === 'filler' && side === 'text' ? 1 : 0.5;
+          return {
+            ...p,
+            [side]: {
+              ...p[side],
+              durationSeconds: Math.max(min, durationSeconds),
+              manualDuration: true,
+            },
+          };
+        }),
       }));
     },
     []
@@ -153,12 +154,38 @@ export function useScript(initial?: Script) {
 
   const insertFiller = useCallback((atIndex: number) => {
     setScript((prev) => {
+      const newPairs = [...prev.pairs];
+
+      // Check if insertion point is inside a visual span (pair at atIndex has visualSpan=0)
+      if (atIndex < newPairs.length && newPairs[atIndex].visualSpan === 0) {
+        // Find span owner by walking up
+        let ownerIdx = atIndex - 1;
+        while (ownerIdx > 0 && newPairs[ownerIdx].visualSpan === 0) {
+          ownerIdx--;
+        }
+        const ownerSpan = newPairs[ownerIdx].visualSpan ?? 1;
+        const spanBefore = atIndex - ownerIdx;
+        const spanAfter = ownerSpan - spanBefore;
+
+        // Shrink owner's span to cover only up to the insertion point
+        newPairs[ownerIdx] = {
+          ...newPairs[ownerIdx],
+          visualSpan: spanBefore === 1 ? undefined : spanBefore,
+        };
+
+        // The pair at atIndex becomes the new span owner for the rest
+        newPairs[atIndex] = {
+          ...newPairs[atIndex],
+          visual: createVisualBubble(''),
+          visualSpan: spanAfter === 1 ? undefined : spanAfter,
+        };
+      }
+
       const fillerPair: BubblePair = {
         id: generateId(),
         text: createFillerBubble(),
         visual: createVisualBubble(''),
       };
-      const newPairs = [...prev.pairs];
       newPairs.splice(atIndex, 0, fillerPair);
       return { ...prev, pairs: newPairs };
     });
@@ -312,6 +339,38 @@ export function useScript(initial?: Script) {
     });
   }, []);
 
+  const splitVisualSpan = useCallback((atPairIndex: number) => {
+    setScript((prev) => {
+      const pair = prev.pairs[atPairIndex];
+      if (!pair || pair.visualSpan !== 0) return prev;
+
+      // Walk up to find span owner
+      let ownerIdx = atPairIndex - 1;
+      while (ownerIdx > 0 && prev.pairs[ownerIdx].visualSpan === 0) {
+        ownerIdx--;
+      }
+      const ownerSpan = prev.pairs[ownerIdx].visualSpan ?? 1;
+      const spanBefore = atPairIndex - ownerIdx;
+      const spanAfter = ownerSpan - spanBefore;
+
+      const newPairs = prev.pairs.map((p, i) => {
+        if (i === ownerIdx) {
+          return { ...p, visualSpan: spanBefore === 1 ? undefined : spanBefore };
+        }
+        if (i === atPairIndex) {
+          return {
+            ...p,
+            visual: createVisualBubble(''),
+            visualSpan: spanAfter === 1 ? undefined : spanAfter,
+          };
+        }
+        return p;
+      });
+
+      return { ...prev, pairs: newPairs };
+    });
+  }, []);
+
   return {
     script,
     setScript,
@@ -328,5 +387,6 @@ export function useScript(initial?: Script) {
     mergePairDown,
     mergeVisualUp,
     mergeVisualDown,
+    splitVisualSpan,
   };
 }

@@ -113,7 +113,7 @@ export function TextBubble({
       const onMove = (moveEvent: MouseEvent) => {
         const delta = moveEvent.clientY - startY;
         const deltaSec = delta / 40;
-        const newDuration = Math.max(0.5, startDuration + deltaSec);
+        const newDuration = Math.max(1, startDuration + deltaSec);
         onDurationChange(newDuration);
       };
 
@@ -143,7 +143,7 @@ export function TextBubble({
   if (isFiller) {
     return (
       <div
-        className={`relative group rounded-3xl border border-dashed flex flex-col items-center justify-center select-none ${
+        className={`relative group rounded-3xl border border-dashed flex flex-col items-center justify-center select-none h-full ${
           dark
             ? 'border-slate-600 bg-slate-800/30'
             : 'border-slate-300 bg-slate-50'

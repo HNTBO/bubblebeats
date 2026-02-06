@@ -23,6 +23,7 @@ function AppContent() {
     mergePairDown,
     mergeVisualUp,
     mergeVisualDown,
+    splitVisualSpan,
   } = useScript();
 
   const currentDuration = script.pairs.reduce(
@@ -55,6 +56,7 @@ function AppContent() {
         onMergePairDown={mergePairDown}
         onMergeVisualUp={mergeVisualUp}
         onMergeVisualDown={mergeVisualDown}
+        onSplitVisualSpan={splitVisualSpan}
       />
       <footer className={`border-t px-6 py-1.5 text-[10px] flex justify-between ${
         dark ? 'border-slate-800 text-slate-600' : 'border-slate-200 text-slate-400'
