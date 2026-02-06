@@ -1,4 +1,4 @@
-import { useCallback, useRef, useEffect, useState, Fragment } from 'react';
+import { useCallback, useRef, useEffect, useState } from 'react';
 import type { BubblePair } from '../types/script';
 import { TextBubble } from './TextBubble';
 import { VisualBubble } from './VisualBubble';
@@ -16,6 +16,10 @@ interface BubbleTimelineProps {
   onInsertFiller: (atIndex: number) => void;
   onUpdateDuration: (pairId: string, side: 'text' | 'visual', duration: number) => void;
   onDeletePair: (pairId: string) => void;
+  onMergePairUp: (pairId: string) => void;
+  onMergePairDown: (pairId: string) => void;
+  onMergeVisualUp: (pairId: string) => void;
+  onMergeVisualDown: (pairId: string) => void;
 }
 
 const GAP_PX = 8;
@@ -29,6 +33,11 @@ export function BubbleTimeline({
   onSplit,
   onInsertFiller,
   onUpdateDuration,
+  onDeletePair,
+  onMergePairUp,
+  onMergePairDown,
+  onMergeVisualUp,
+  onMergeVisualDown,
 }: BubbleTimelineProps) {
   const { settings } = useSettings();
   const dark = settings.theme === 'dark';
@@ -66,10 +75,11 @@ export function BubbleTimeline({
   const effectiveTotal = Math.max(textDuration, totalDuration);
 
   // Min-heights: proportional for fillers, small fixed for text pairs
+  const proportionalPxPerSec = containerHeight / effectiveTotal;
+  const fillerPxPerSec = Math.max(proportionalPxPerSec, 30);
   const pairMinHeights = pairs.map((p) => {
     if (p.text.type === 'filler') {
-      const fraction = p.text.durationSeconds / effectiveTotal;
-      return Math.max(48, fraction * containerHeight);
+      return Math.max(28, p.text.durationSeconds * fillerPxPerSec);
     }
     return 48;
   });
@@ -132,6 +142,97 @@ export function BubbleTimeline({
 
   const scrollbarClass = `custom-scrollbar ${dark ? 'scrollbar-dark' : 'scrollbar-light'}`;
 
+  // Build grid row templates:
+  // For each pair i: separator row (GAP_PX height) + content row (auto)
+  // Row numbering (1-indexed): separator = 2*i + 1, content = 2*i + 2
+  const gridTemplateRows = pairs
+    .flatMap((_, i) => {
+      const sepHeight = `${GAP_PX}px`;
+      const contentHeight = `minmax(${pairMinHeights[i]}px, auto)`;
+      return i === 0 ? [sepHeight, contentHeight] : [sepHeight, contentHeight];
+    })
+    .join(' ');
+
+  // Build grid items
+  const gridItems: React.ReactNode[] = [];
+
+  for (let i = 0; i < pairs.length; i++) {
+    const pair = pairs[i];
+    const sepRow = 2 * i + 1;
+    const contentRow = 2 * i + 2;
+
+    // Separator + button (voice column only)
+    gridItems.push(
+      <div
+        key={`sep-${pair.id}`}
+        className="relative cursor-pointer group/boundary"
+        style={{ gridColumn: 1, gridRow: sepRow }}
+        onClick={() => onInsertFiller(i)}
+      >
+        <div className="absolute -top-2 -bottom-2 left-0 right-0 flex items-center justify-center z-10">
+          <div className={`rounded-full p-0.5 opacity-0 group-hover/boundary:opacity-100 transition-opacity ${
+            dark ? 'bg-slate-800 shadow-sm' : 'bg-white shadow-sm'
+          }`}>
+            <Plus size={12} className={dark ? 'text-slate-400' : 'text-slate-500'} />
+          </div>
+        </div>
+      </div>
+    );
+
+    // Text bubble (voice column)
+    gridItems.push(
+      <div
+        key={`text-${pair.id}`}
+        style={{ gridColumn: 1, gridRow: contentRow }}
+      >
+        <TextBubble
+          content={pair.text.content}
+          durationSeconds={pair.text.durationSeconds}
+          isFiller={pair.text.type === 'filler'}
+          isEditing={pair.id === editingPairId}
+          onContentChange={(c) => onUpdateText(pair.id, c)}
+          onEnterEdit={() => enterEditMode(pair.id)}
+          onExitEdit={exitEditMode}
+          onSplit={(offset) => onSplit(pair.id, offset)}
+          onDurationChange={(d) => onUpdateDuration(pair.id, 'text', d)}
+          cumulativeTime={cumulativeTimes[i]}
+          pairIndex={i}
+          totalPairs={pairs.length}
+          onDeletePair={() => onDeletePair(pair.id)}
+          onMergePairUp={() => onMergePairUp(pair.id)}
+          onMergePairDown={() => onMergePairDown(pair.id)}
+        />
+      </div>
+    );
+
+    // Visual bubble (visual column) — only render if visualSpan !== 0
+    const span = pair.visualSpan ?? 1;
+    if (span !== 0) {
+      // Calculate end row: spans N content rows + (N-1) separator rows between them
+      const endRow = contentRow + 2 * span - 1;
+
+      gridItems.push(
+        <div
+          key={`visual-${pair.id}`}
+          style={{
+            gridColumn: 2,
+            gridRow: `${contentRow} / ${endRow}`,
+          }}
+        >
+          <VisualBubble
+            content={pair.visual.content}
+            onContentChange={(c) => onUpdateVisual(pair.id, c)}
+            showPlaceholder={i === 0}
+            pairIndex={i}
+            totalPairs={pairs.length}
+            onMergeVisualUp={() => onMergeVisualUp(pair.id)}
+            onMergeVisualDown={() => onMergeVisualDown(pair.id)}
+          />
+        </div>
+      );
+    }
+  }
+
   return (
     <div className="flex flex-1 overflow-hidden flex-col">
       <div ref={scrollRef} className={`flex-1 overflow-y-auto flex flex-col ${scrollbarClass}`} style={{ scrollbarGutter: 'stable' }}>
@@ -164,96 +265,59 @@ export function BubbleTimeline({
               </div>
             </div>
 
-            {/* Pairs */}
-            <div className="flex flex-col px-4 pb-4">
-              {pairs.map((pair, i) => (
-                <Fragment key={pair.id}>
-                  {/* Separator: + icon centered in voice column area */}
-                  {i > 0 && (
-                    <div className="grid grid-cols-2" style={{ gap: GAP_PX, height: GAP_PX }}>
-                      <div
-                        className="relative cursor-pointer group/boundary"
-                        onClick={() => onInsertFiller(i)}
-                      >
-                        <div className="absolute -top-2 -bottom-2 left-0 right-0 flex items-center justify-center z-10">
-                          <div className={`rounded-full p-0.5 opacity-0 group-hover/boundary:opacity-100 transition-opacity ${
-                            dark ? 'bg-slate-800 shadow-sm' : 'bg-white shadow-sm'
-                          }`}>
-                            <Plus size={12} className={dark ? 'text-slate-400' : 'text-slate-500'} />
-                          </div>
-                        </div>
-                      </div>
-                      <div />
-                    </div>
-                  )}
+            {/* Single CSS Grid for all pairs */}
+            <div
+              className="px-4 pb-4"
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                columnGap: GAP_PX,
+                gridTemplateRows,
+              }}
+            >
+              {gridItems}
+            </div>
 
-                  {/* Pair row: CSS Grid syncs height between voice and visual */}
-                  <div
-                    className="grid grid-cols-2 items-stretch"
-                    style={{ gap: GAP_PX, minHeight: pairMinHeights[i] }}
-                  >
-                    <TextBubble
-                      content={pair.text.content}
-                      durationSeconds={pair.text.durationSeconds}
-                      isFiller={pair.text.type === 'filler'}
-                      isEditing={pair.id === editingPairId}
-                      onContentChange={(c) => onUpdateText(pair.id, c)}
-                      onEnterEdit={() => enterEditMode(pair.id)}
-                      onExitEdit={exitEditMode}
-                      onSplit={(offset) => onSplit(pair.id, offset)}
-                      onDurationChange={(d) => onUpdateDuration(pair.id, 'text', d)}
-                      cumulativeTime={cumulativeTimes[i]}
-                    />
-                    <VisualBubble
-                      content={pair.visual.content}
-                      onContentChange={(c) => onUpdateVisual(pair.id, c)}
-                      showPlaceholder={i === 0}
-                    />
-                  </div>
-                </Fragment>
-              ))}
-
-              {/* Filler: remaining time */}
-              {fillerMinHeight > 0 && (
-                <>
-                  <div style={{ height: GAP_PX }} />
-                  <div
-                    className="grid grid-cols-2 items-stretch"
-                    style={{ gap: GAP_PX, minHeight: fillerMinHeight }}
-                  >
-                    <div className={`rounded-3xl border border-dashed flex items-center justify-center select-none ${
-                      dark
-                        ? 'border-slate-700 bg-slate-900/40'
-                        : 'border-slate-200 bg-slate-50/60'
-                    }`}>
-                      <span className={`text-[10px] uppercase tracking-wider ${dark ? 'text-slate-600' : 'text-slate-400'}`}>
-                        {formatTime(remainingTime)} remaining
-                      </span>
-                    </div>
-                    <div className={`rounded-3xl border border-dashed ${
-                      dark
-                        ? 'border-slate-700 bg-slate-900/40'
-                        : 'border-slate-200 bg-slate-50/60'
-                    }`} />
-                  </div>
-                </>
-              )}
-
-              {/* Over budget */}
-              {overBudget && (
-                <div className="pt-2">
-                  <div className={`rounded-3xl border border-dashed flex items-center justify-center py-2 ${
+            {/* Filler: remaining time */}
+            {fillerMinHeight > 0 && (
+              <div className="px-4">
+                <div style={{ height: GAP_PX }} />
+                <div
+                  className="grid grid-cols-2 items-stretch"
+                  style={{ gap: GAP_PX, minHeight: fillerMinHeight }}
+                >
+                  <div className={`rounded-3xl border border-dashed flex items-center justify-center select-none ${
                     dark
-                      ? 'border-red-500/40 bg-red-950/20'
-                      : 'border-red-300 bg-red-50'
+                      ? 'border-slate-700 bg-slate-900/40'
+                      : 'border-slate-200 bg-slate-50/60'
                   }`}>
-                    <span className="text-[10px] uppercase tracking-wider text-red-400">
-                      over by {formatTime(textDuration - totalDuration)}
+                    <span className={`text-[10px] uppercase tracking-wider ${dark ? 'text-slate-600' : 'text-slate-400'}`}>
+                      {formatTime(remainingTime)} remaining
                     </span>
                   </div>
+                  <div className={`rounded-3xl border border-dashed ${
+                    dark
+                      ? 'border-slate-700 bg-slate-900/40'
+                      : 'border-slate-200 bg-slate-50/60'
+                  }`} />
                 </div>
-              )}
-            </div>
+              </div>
+            )}
+
+            {/* Over budget */}
+            {overBudget && (
+              <div className="px-4 pt-2">
+                <div className={`rounded-3xl border border-dashed flex items-center justify-center py-2 ${
+                  dark
+                    ? 'border-red-500/40 bg-red-950/20'
+                    : 'border-red-300 bg-red-50'
+                }`}>
+                  <span className="text-[10px] uppercase tracking-wider text-red-400">
+                    over by {formatTime(textDuration - totalDuration)}
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

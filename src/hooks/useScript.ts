@@ -171,6 +171,147 @@ export function useScript(initial?: Script) {
     }));
   }, []);
 
+  const mergePairUp = useCallback((pairId: string) => {
+    setScript((prev) => {
+      const idx = prev.pairs.findIndex((p) => p.id === pairId);
+      if (idx <= 0) return prev;
+
+      const above = prev.pairs[idx - 1];
+      const current = prev.pairs[idx];
+
+      const mergedTextContent = [above.text.content, current.text.content]
+        .filter(Boolean)
+        .join('\n');
+      const mergedVisualContent = [above.visual.content, current.visual.content]
+        .filter(Boolean)
+        .join('\n');
+
+      const mergedPair: BubblePair = {
+        ...above,
+        text: {
+          ...above.text,
+          content: mergedTextContent,
+          durationSeconds: Math.max(estimateDuration(mergedTextContent), 0.5),
+          manualDuration: undefined,
+        },
+        visual: {
+          ...above.visual,
+          content: mergedVisualContent,
+        },
+        visualSpan: (above.visualSpan ?? 1) + (current.visualSpan ?? 1) - 1,
+      };
+      // Normalize visualSpan: 1 → undefined
+      if (mergedPair.visualSpan === 1) mergedPair.visualSpan = undefined;
+
+      const newPairs = [...prev.pairs];
+      newPairs.splice(idx - 1, 2, mergedPair);
+      return { ...prev, pairs: newPairs };
+    });
+  }, []);
+
+  const mergePairDown = useCallback((pairId: string) => {
+    setScript((prev) => {
+      const idx = prev.pairs.findIndex((p) => p.id === pairId);
+      if (idx === -1 || idx >= prev.pairs.length - 1) return prev;
+
+      const current = prev.pairs[idx];
+      const below = prev.pairs[idx + 1];
+
+      const mergedTextContent = [current.text.content, below.text.content]
+        .filter(Boolean)
+        .join('\n');
+      const mergedVisualContent = [current.visual.content, below.visual.content]
+        .filter(Boolean)
+        .join('\n');
+
+      const mergedPair: BubblePair = {
+        ...current,
+        text: {
+          ...current.text,
+          content: mergedTextContent,
+          durationSeconds: Math.max(estimateDuration(mergedTextContent), 0.5),
+          manualDuration: undefined,
+        },
+        visual: {
+          ...current.visual,
+          content: mergedVisualContent,
+        },
+        visualSpan: (current.visualSpan ?? 1) + (below.visualSpan ?? 1) - 1,
+      };
+      if (mergedPair.visualSpan === 1) mergedPair.visualSpan = undefined;
+
+      const newPairs = [...prev.pairs];
+      newPairs.splice(idx, 2, mergedPair);
+      return { ...prev, pairs: newPairs };
+    });
+  }, []);
+
+  const mergeVisualUp = useCallback((pairId: string) => {
+    setScript((prev) => {
+      const idx = prev.pairs.findIndex((p) => p.id === pairId);
+      if (idx <= 0) return prev;
+
+      // Walk up to find the span owner
+      let ownerIdx = idx - 1;
+      while (ownerIdx > 0 && prev.pairs[ownerIdx].visualSpan === 0) {
+        ownerIdx--;
+      }
+
+      const owner = prev.pairs[ownerIdx];
+      const current = prev.pairs[idx];
+
+      const mergedVisualContent = [owner.visual.content, current.visual.content]
+        .filter(Boolean)
+        .join('\n');
+
+      const newPairs = prev.pairs.map((p, i) => {
+        if (i === ownerIdx) {
+          return {
+            ...p,
+            visual: { ...p.visual, content: mergedVisualContent },
+            visualSpan: (owner.visualSpan ?? 1) + (current.visualSpan ?? 1),
+          };
+        }
+        if (i === idx) {
+          return { ...p, visualSpan: 0 };
+        }
+        return p;
+      });
+
+      return { ...prev, pairs: newPairs };
+    });
+  }, []);
+
+  const mergeVisualDown = useCallback((pairId: string) => {
+    setScript((prev) => {
+      const idx = prev.pairs.findIndex((p) => p.id === pairId);
+      if (idx === -1 || idx >= prev.pairs.length - 1) return prev;
+
+      const current = prev.pairs[idx];
+      const below = prev.pairs[idx + 1];
+
+      const mergedVisualContent = [current.visual.content, below.visual.content]
+        .filter(Boolean)
+        .join('\n');
+
+      const newPairs = prev.pairs.map((p, i) => {
+        if (i === idx) {
+          return {
+            ...p,
+            visual: { ...p.visual, content: mergedVisualContent },
+            visualSpan: (current.visualSpan ?? 1) + (below.visualSpan ?? 1),
+          };
+        }
+        if (i === idx + 1) {
+          return { ...p, visualSpan: 0 };
+        }
+        return p;
+      });
+
+      return { ...prev, pairs: newPairs };
+    });
+  }, []);
+
   return {
     script,
     setScript,
@@ -183,5 +324,9 @@ export function useScript(initial?: Script) {
     splitBubble,
     insertFiller,
     deletePair,
+    mergePairUp,
+    mergePairDown,
+    mergeVisualUp,
+    mergeVisualDown,
   };
 }

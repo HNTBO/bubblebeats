@@ -1,6 +1,8 @@
 import { useRef, useCallback, useLayoutEffect, useState } from 'react';
 import { formatTime, countWords, estimateDuration } from '../utils/timing';
 import { useSettings } from '../hooks/useSettings';
+import { X } from 'lucide-react';
+import { PopOverlay } from './PopOverlay';
 
 interface TextBubbleProps {
   content: string;
@@ -13,6 +15,11 @@ interface TextBubbleProps {
   onSplit: (charOffset: number) => void;
   onDurationChange: (seconds: number) => void;
   cumulativeTime: number;
+  pairIndex: number;
+  totalPairs: number;
+  onDeletePair: () => void;
+  onMergePairUp: () => void;
+  onMergePairDown: () => void;
 }
 
 export function TextBubble({
@@ -26,12 +33,18 @@ export function TextBubble({
   onSplit,
   onDurationChange,
   cumulativeTime,
+  pairIndex,
+  totalPairs,
+  onDeletePair,
+  onMergePairUp,
+  onMergePairDown,
 }: TextBubbleProps) {
   const { settings } = useSettings();
   const dark = settings.theme === 'dark';
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const bubbleRef = useRef<HTMLDivElement>(null);
   const [editHeight, setEditHeight] = useState(0);
+  const [showPop, setShowPop] = useState(false);
 
   // Capture bubble height when entering edit mode (prevents shrink during editing)
   useLayoutEffect(() => {
@@ -115,6 +128,18 @@ export function TextBubble({
     [durationSeconds, onDurationChange]
   );
 
+  const handlePopClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (isFiller) {
+        onDeletePair();
+      } else {
+        setShowPop(true);
+      }
+    },
+    [isFiller, onDeletePair]
+  );
+
   if (isFiller) {
     return (
       <div
@@ -128,10 +153,17 @@ export function TextBubble({
           pause {durationSeconds.toFixed(1)}s
         </span>
         {settings.infoMode && (
-          <span className={`absolute top-2 right-3 text-[9px] font-mono ${dark ? 'text-slate-600' : 'text-slate-400'}`}>
+          <span className={`absolute top-2 left-3 text-[9px] font-mono ${dark ? 'text-slate-600' : 'text-slate-400'}`}>
             {formatTime(cumulativeTime)}
           </span>
         )}
+        {/* Pop icon — top right, on hover */}
+        <button
+          className={`absolute top-2 right-3 opacity-0 group-hover:opacity-100 transition-opacity ${dark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-400 hover:text-slate-600'}`}
+          onClick={handlePopClick}
+        >
+          <X size={14} />
+        </button>
         {/* Resize handle — fillers only */}
         <div
           className="absolute bottom-0 left-4 right-4 h-3 cursor-ns-resize opacity-0 group-hover:opacity-100 transition-opacity z-10"
@@ -151,7 +183,7 @@ export function TextBubble({
     <div
       ref={bubbleRef}
       data-editing-bubble={isEditing || undefined}
-      className={`relative rounded-3xl border p-4 flex flex-col transition-colors ${
+      className={`relative group rounded-3xl border p-4 flex flex-col transition-colors ${
         isEditing
           ? dark
             ? 'border-sky-500/60 bg-slate-800/50 shadow-[inset_0_0_12px_rgba(56,189,248,0.15)]'
@@ -168,10 +200,34 @@ export function TextBubble({
       onClick={handleClick}
       onDoubleClick={handleDoubleClick}
     >
+      {/* TC-IN — top left */}
       {settings.infoMode && (
-        <span className={`absolute top-2 right-3 text-[9px] font-mono ${dark ? 'text-slate-600' : 'text-slate-400'}`}>
+        <span className={`absolute top-2 left-3 text-[9px] font-mono ${dark ? 'text-slate-600' : 'text-slate-400'}`}>
           {formatTime(cumulativeTime)}
         </span>
+      )}
+
+      {/* Pop icon — top right, on hover, hidden during edit */}
+      {!isEditing && (
+        <button
+          className={`absolute top-2 right-3 opacity-0 group-hover:opacity-100 transition-opacity z-10 ${dark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-400 hover:text-slate-600'}`}
+          onClick={handlePopClick}
+        >
+          <X size={14} />
+        </button>
+      )}
+
+      {/* Pop Overlay */}
+      {showPop && (
+        <PopOverlay
+          mode="text"
+          canMergeUp={pairIndex > 0}
+          canMergeDown={pairIndex < totalPairs - 1}
+          onMergeUp={() => { setShowPop(false); onMergePairUp(); }}
+          onMergeDown={() => { setShowPop(false); onMergePairDown(); }}
+          onErase={() => { setShowPop(false); onDeletePair(); }}
+          onExit={() => setShowPop(false)}
+        />
       )}
 
       <textarea

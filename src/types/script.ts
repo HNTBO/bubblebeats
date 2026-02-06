@@ -12,6 +12,11 @@ export interface BubblePair {
   id: string;
   text: Bubble;
   visual: Bubble;
+  /** Visual column spanning:
+   *  undefined or 1 = normal single pair
+   *  0 = hidden (covered by a span from above)
+   *  N > 1 = this visual spans N consecutive pairs */
+  visualSpan?: number;
 }
 
 export interface Script {

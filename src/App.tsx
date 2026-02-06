@@ -19,6 +19,10 @@ function AppContent() {
     splitBubble,
     insertFiller,
     deletePair,
+    mergePairUp,
+    mergePairDown,
+    mergeVisualUp,
+    mergeVisualDown,
   } = useScript();
 
   const currentDuration = script.pairs.reduce(
@@ -47,11 +51,15 @@ function AppContent() {
         onInsertFiller={insertFiller}
         onUpdateDuration={updateBubbleDuration}
         onDeletePair={deletePair}
+        onMergePairUp={mergePairUp}
+        onMergePairDown={mergePairDown}
+        onMergeVisualUp={mergeVisualUp}
+        onMergeVisualDown={mergeVisualDown}
       />
       <footer className={`border-t px-6 py-1.5 text-[10px] flex justify-between ${
         dark ? 'border-slate-800 text-slate-600' : 'border-slate-200 text-slate-400'
       }`}>
-        <span>Double-click text to edit | Ctrl+Click to split | Click + to add pause | Drag pause edge to resize</span>
+        <span>Double-click text to edit | Ctrl+Click to split | Click + to add pause | Drag pause edge to resize | Hover X to pop/merge</span>
         <span>{script.pairs.length} segments</span>
       </footer>
     </div>
