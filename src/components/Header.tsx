@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Clock, Menu, FileDown, FileUp, Moon, Sun, Eye, EyeOff } from 'lucide-react';
+import { Clock, Menu, FileDown, FileUp, Moon, Sun, Info, EyeOff } from 'lucide-react';
 import { formatTime } from '../utils/timing';
 import { useSettings } from '../hooks/useSettings';
 
@@ -18,7 +18,7 @@ export function Header({
   onTitleChange,
   onDurationChange,
 }: HeaderProps) {
-  const { settings, toggleTheme, toggleMinimal } = useSettings();
+  const { settings, toggleTheme, toggleInfoMode } = useSettings();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const overflow = currentDuration > totalDuration;
@@ -134,10 +134,10 @@ export function Header({
               className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
                 dark ? 'text-slate-300 hover:bg-slate-700' : 'text-slate-700 hover:bg-slate-50'
               }`}
-              onClick={() => { toggleMinimal(); }}
+              onClick={() => { toggleInfoMode(); }}
             >
-              {settings.minimal ? <Eye size={15} /> : <EyeOff size={15} />}
-              {settings.minimal ? 'Show details' : 'Minimal mode'}
+              {settings.infoMode ? <EyeOff size={15} /> : <Info size={15} />}
+              {settings.infoMode ? 'Hide info' : 'Info mode'}
             </button>
           </div>
         )}

@@ -35,6 +35,7 @@ function AppContent() {
       />
       <BubbleTimeline
         pairs={script.pairs}
+        totalDuration={script.totalDurationSeconds}
         onUpdateText={updatePairText}
         onUpdateVisual={updatePairVisual}
         onSplit={splitBubble}

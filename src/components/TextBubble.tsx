@@ -1,5 +1,5 @@
-import { useRef, useCallback, useEffect } from 'react';
-import { timingRatio, formatTime } from '../utils/timing';
+import { useRef, useCallback } from 'react';
+import { formatTime, countWords, estimateDuration } from '../utils/timing';
 import { useSettings } from '../hooks/useSettings';
 
 interface TextBubbleProps {
@@ -10,6 +10,7 @@ interface TextBubbleProps {
   onSplit: (charOffset: number) => void;
   onDurationChange: (seconds: number) => void;
   cumulativeTime: number;
+  height: number;
 }
 
 export function TextBubble({
@@ -20,21 +21,11 @@ export function TextBubble({
   onSplit,
   onDurationChange,
   cumulativeTime,
+  height,
 }: TextBubbleProps) {
   const { settings } = useSettings();
   const dark = settings.theme === 'dark';
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-  // Auto-resize textarea to fit content
-  useEffect(() => {
-    if (textareaRef.current && !isFiller) {
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px';
-    }
-  }, [content, isFiller]);
-
-  const ratio = isFiller ? 1 : timingRatio(content, durationSeconds);
-  const isTooFast = ratio < 0.85;
 
   const handleClick = useCallback(
     (e: React.MouseEvent) => {
@@ -76,9 +67,9 @@ export function TextBubble({
 
   if (isFiller) {
     return (
-      <div className="relative group">
+      <div className="h-full relative group">
         <div
-          className={`h-12 rounded-3xl border border-dashed flex items-center justify-center cursor-ns-resize select-none ${
+          className={`h-full rounded-3xl border border-dashed flex items-center justify-center cursor-ns-resize select-none ${
             dark
               ? 'border-slate-600 bg-slate-800/30'
               : 'border-slate-300 bg-slate-50'
@@ -89,17 +80,24 @@ export function TextBubble({
             pause {durationSeconds.toFixed(1)}s
           </span>
         </div>
+        {settings.infoMode && (
+          <span className={`absolute top-2 right-3 text-[9px] font-mono ${dark ? 'text-slate-600' : 'text-slate-400'}`}>
+            {formatTime(cumulativeTime)}
+          </span>
+        )}
       </div>
     );
   }
 
-  const wordCount = content.trim().split(/\s+/).filter(Boolean).length;
+  const wordCount = countWords(content);
+  const neededDuration = estimateDuration(content);
+  const overBudget = neededDuration > durationSeconds && durationSeconds > 0;
 
   return (
-    <div className="relative group">
+    <div className="h-full relative group" style={{ minHeight: height }}>
       <div
-        className={`rounded-3xl border p-4 transition-colors ${
-          isTooFast
+        className={`h-full rounded-3xl border p-4 flex flex-col transition-colors ${
+          overBudget
             ? dark
               ? 'border-red-500/60 bg-red-950/20 shadow-[0_0_8px_rgba(239,68,68,0.15)]'
               : 'border-red-300 bg-red-50 shadow-[0_0_8px_rgba(239,68,68,0.1)]'
@@ -109,22 +107,29 @@ export function TextBubble({
         }`}
         onClick={handleClick}
       >
+        {/* TC in top-right */}
+        {settings.infoMode && (
+          <span className={`absolute top-2 right-3 text-[9px] font-mono ${dark ? 'text-slate-600' : 'text-slate-400'}`}>
+            {formatTime(cumulativeTime)}
+          </span>
+        )}
+
         <textarea
           ref={textareaRef}
           value={content}
           onChange={(e) => onContentChange(e.target.value)}
-          className={`w-full bg-transparent text-sm outline-none resize-none leading-relaxed overflow-hidden ${
+          className={`w-full flex-1 bg-transparent text-sm outline-none resize-none leading-relaxed overflow-auto ${
             dark ? 'text-slate-200' : 'text-slate-700'
           }`}
-          rows={1}
           placeholder="Type your voiceover text..."
         />
-        {!settings.minimal && (
-          <div className="flex justify-between items-center mt-1 text-[10px]">
+
+        {settings.infoMode && (
+          <div className="flex justify-between items-center mt-1 text-[10px] flex-shrink-0">
             <span className={dark ? 'text-slate-500' : 'text-slate-400'}>
               {wordCount} words
             </span>
-            <span className={isTooFast ? 'text-red-400' : dark ? 'text-slate-500' : 'text-slate-400'}>
+            <span className={overBudget ? 'text-red-400' : dark ? 'text-slate-500' : 'text-slate-400'}>
               ~{durationSeconds.toFixed(1)}s
             </span>
           </div>
@@ -133,7 +138,7 @@ export function TextBubble({
 
       {/* Resize handle */}
       <div
-        className="absolute bottom-0 left-4 right-4 h-2 cursor-ns-resize opacity-0 group-hover:opacity-100 transition-opacity"
+        className="absolute bottom-0 left-4 right-4 h-2 cursor-ns-resize opacity-0 group-hover:opacity-100 transition-opacity z-10"
         onMouseDown={handleMouseDown}
       >
         <div className={`mx-auto w-8 h-0.5 rounded mt-0.5 ${dark ? 'bg-slate-500' : 'bg-slate-300'}`} />

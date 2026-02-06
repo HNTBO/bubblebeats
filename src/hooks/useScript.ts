@@ -8,11 +8,11 @@ function createTextBubble(content: string): Bubble {
     id: generateId(),
     type: 'text',
     content,
-    durationSeconds: Math.max(estimateDuration(content), 1),
+    durationSeconds: Math.max(estimateDuration(content), 0.5),
   };
 }
 
-function createFillerBubble(duration = 1.5): Bubble {
+function createFillerBubble(duration = 1): Bubble {
   return {
     id: generateId(),
     type: 'filler',
@@ -44,10 +44,7 @@ function createDefaultScript(): Script {
     title: 'Untitled Script',
     totalDurationSeconds: 120,
     pairs: [
-      createPair(
-        'Your opening line goes here...',
-        'Describe the opening visual...'
-      ),
+      createPair('', ''),
     ],
   };
 }
@@ -75,7 +72,7 @@ export function useScript(initial?: Script) {
                 content,
                 durationSeconds: p.text.manualDuration
                   ? p.text.durationSeconds
-                  : Math.max(estimateDuration(content), 1),
+                  : Math.max(estimateDuration(content), 0.5),
               },
             }
           : p
@@ -144,7 +141,6 @@ export function useScript(initial?: Script) {
     []
   );
 
-  /** Insert a filler/pause pair. Text side is filler, visual side is always editable. */
   const insertFiller = useCallback((atIndex: number) => {
     setScript((prev) => {
       const fillerPair: BubblePair = {

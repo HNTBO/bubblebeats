@@ -2,31 +2,38 @@ import { useState, useCallback, createContext, useContext } from 'react';
 
 export interface Settings {
   theme: 'light' | 'dark';
-  minimal: boolean;
+  infoMode: boolean;
 }
 
 interface SettingsContext {
   settings: Settings;
   toggleTheme: () => void;
-  toggleMinimal: () => void;
+  toggleInfoMode: () => void;
 }
 
 const defaultSettings: Settings = {
   theme: 'light',
-  minimal: false,
+  infoMode: true,
 };
 
 export const SettingsContext = createContext<SettingsContext>({
   settings: defaultSettings,
   toggleTheme: () => {},
-  toggleMinimal: () => {},
+  toggleInfoMode: () => {},
 });
 
 export function useSettingsProvider(): SettingsContext {
   const [settings, setSettings] = useState<Settings>(() => {
     try {
       const saved = localStorage.getItem('bubblebeats-settings');
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // migrate old "minimal" key
+        if ('minimal' in parsed) {
+          return { theme: parsed.theme ?? 'light', infoMode: !parsed.minimal };
+        }
+        return { ...defaultSettings, ...parsed };
+      }
     } catch { /* ignore */ }
     return defaultSettings;
   });
@@ -40,11 +47,11 @@ export function useSettingsProvider(): SettingsContext {
     save({ ...settings, theme: settings.theme === 'light' ? 'dark' : 'light' });
   }, [settings, save]);
 
-  const toggleMinimal = useCallback(() => {
-    save({ ...settings, minimal: !settings.minimal });
+  const toggleInfoMode = useCallback(() => {
+    save({ ...settings, infoMode: !settings.infoMode });
   }, [settings, save]);
 
-  return { settings, toggleTheme, toggleMinimal };
+  return { settings, toggleTheme, toggleInfoMode };
 }
 
 export function useSettings() {
