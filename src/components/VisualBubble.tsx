@@ -33,6 +33,7 @@ export function VisualBubble({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [showPop, setShowPop] = useState(false);
   const [dragging, setDragging] = useState(false);
+  const dragCounter = useRef(0);
   const [uploading, setUploading] = useState(false);
 
   const generateUploadUrl = useMutation(api.images.generateUploadUrl);
@@ -92,9 +93,10 @@ export function VisualBubble({
           ? 'border-emerald-800/40 bg-emerald-950/20'
           : 'border-emerald-200 bg-emerald-50/50'
       } ${dragging ? (dark ? 'ring-2 ring-emerald-500/50' : 'ring-2 ring-emerald-300') : ''}`}
-      onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
-      onDragLeave={() => setDragging(false)}
-      onDrop={handleDrop}
+      onDragEnter={(e) => { e.preventDefault(); dragCounter.current++; setDragging(true); }}
+      onDragOver={(e) => { e.preventDefault(); }}
+      onDragLeave={() => { dragCounter.current--; if (dragCounter.current <= 0) { dragCounter.current = 0; setDragging(false); } }}
+      onDrop={(e) => { dragCounter.current = 0; handleDrop(e); }}
     >
       {/* Pop icon — top right, on hover */}
       <button
@@ -145,7 +147,7 @@ export function VisualBubble({
 
       {/* Drop zone hint when dragging */}
       {dragging && (
-        <div className={`absolute inset-0 flex items-center justify-center rounded-3xl z-20 ${
+        <div className={`absolute inset-0 flex items-center justify-center rounded-3xl z-20 pointer-events-none ${
           dark ? 'bg-emerald-950/80' : 'bg-emerald-50/80'
         }`}>
           <div className={`flex items-center gap-2 text-sm ${dark ? 'text-emerald-300' : 'text-emerald-600'}`}>
