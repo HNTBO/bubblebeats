@@ -1,15 +1,19 @@
 import { useEffect, useRef, useCallback } from 'react';
+import { SignIn, useUser } from '@clerk/clerk-react';
+import { Authenticated, Unauthenticated, AuthLoading } from 'convex/react';
 import { Header } from './components/Header';
 import { BubbleTimeline } from './components/BubbleTimeline';
 import { useScript } from './hooks/useScript';
 import { SettingsContext, useSettingsProvider, useSettings } from './hooks/useSettings';
 import { StorageContext, useStorageProvider, useStorage } from './hooks/useStorage';
+import { MigrationBanner } from './components/MigrationBanner';
 import type { Script } from './types/script';
 
 function AppContent() {
   const { settings } = useSettings();
   const dark = settings.theme === 'dark';
   const storage = useStorage();
+  const { user } = useUser();
 
   const {
     script,
@@ -19,6 +23,7 @@ function AppContent() {
     updatePairText,
     commitPairText,
     updatePairVisual,
+    updateBubbleImage,
     updateBubbleDuration,
     splitBubble,
     insertFiller,
@@ -33,7 +38,7 @@ function AppContent() {
   // --- Bootstrap: load or create initial file ---
   const bootstrapped = useRef(false);
   useEffect(() => {
-    if (bootstrapped.current) return;
+    if (bootstrapped.current || storage.isLoading) return;
     bootstrapped.current = true;
 
     if (storage.currentFileId) {
@@ -57,7 +62,7 @@ function AppContent() {
     const { id, script: newScript } = storage.createFile();
     setScript(newScript);
     storage.setCurrentFileId(id);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [storage.isLoading]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // --- Auto-save with 1s debounce ---
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -65,11 +70,11 @@ function AppContent() {
   scriptRef.current = script;
 
   useEffect(() => {
-    if (!storage.currentFileId || !bootstrapped.current) return;
+    if (!storage.currentFileId || !bootstrapped.current || storage.currentFileId.startsWith('pending-')) return;
 
     if (saveTimer.current) clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(() => {
-      if (storage.currentFileId) {
+      if (storage.currentFileId && !storage.currentFileId.startsWith('pending-')) {
         storage.saveFile(storage.currentFileId, scriptRef.current);
       }
     }, 1000);
@@ -82,7 +87,7 @@ function AppContent() {
   // --- File operations ---
   const handleSwitchFile = useCallback((id: string) => {
     // Save current file immediately before switching
-    if (storage.currentFileId) {
+    if (storage.currentFileId && !storage.currentFileId.startsWith('pending-')) {
       storage.saveFile(storage.currentFileId, scriptRef.current);
     }
     const loaded = storage.loadFile(id);
@@ -94,7 +99,7 @@ function AppContent() {
 
   const handleNewScript = useCallback(() => {
     // Save current file first
-    if (storage.currentFileId) {
+    if (storage.currentFileId && !storage.currentFileId.startsWith('pending-')) {
       storage.saveFile(storage.currentFileId, scriptRef.current);
     }
     const { id, script: newScript } = storage.createFile();
@@ -125,7 +130,7 @@ function AppContent() {
 
   const handleImport = useCallback((imported: Script) => {
     // Save current file first
-    if (storage.currentFileId) {
+    if (storage.currentFileId && !storage.currentFileId.startsWith('pending-')) {
       storage.saveFile(storage.currentFileId, scriptRef.current);
     }
     // Create a new file from imported script
@@ -139,8 +144,20 @@ function AppContent() {
     0
   );
 
+  if (storage.isLoading) {
+    return (
+      <div className={`flex items-center justify-center h-screen ${dark ? 'bg-slate-950 text-slate-400' : 'bg-slate-50 text-slate-500'}`}>
+        <div className="text-center">
+          <div className="animate-spin w-8 h-8 border-2 border-sky-500 border-t-transparent rounded-full mx-auto mb-3" />
+          <p className="text-sm">Loading scripts...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={`flex flex-col h-screen ${dark ? 'bg-slate-950 text-slate-200' : 'bg-slate-50 text-slate-800'}`}>
+      <MigrationBanner />
       <Header
         title={script.title}
         totalDuration={script.totalDurationSeconds}
@@ -154,6 +171,7 @@ function AppContent() {
         onSwitchFile={handleSwitchFile}
         onNewScript={handleNewScript}
         onDeleteFile={handleDeleteScript}
+        userName={user?.firstName ?? user?.emailAddresses[0]?.emailAddress ?? 'User'}
       />
       <BubbleTimeline
         pairs={script.pairs}
@@ -161,6 +179,7 @@ function AppContent() {
         onUpdateText={updatePairText}
         onCommitText={commitPairText}
         onUpdateVisual={updatePairVisual}
+        onUpdateImage={updateBubbleImage}
         onSplit={splitBubble}
         onInsertFiller={insertFiller}
         onUpdateDuration={updateBubbleDuration}
@@ -181,16 +200,51 @@ function AppContent() {
   );
 }
 
+function LoginScreen() {
+  return (
+    <div className="flex items-center justify-center h-screen bg-slate-950">
+      <div className="text-center">
+        <h1 className="text-3xl font-bold text-sky-500 mb-2 tracking-tight">BubbleBeats</h1>
+        <p className="text-slate-400 text-sm mb-8">Visual script timing editor</p>
+        <SignIn routing="hash" />
+      </div>
+    </div>
+  );
+}
+
+function LoadingScreen() {
+  return (
+    <div className="flex items-center justify-center h-screen bg-slate-950">
+      <div className="animate-spin w-8 h-8 border-2 border-sky-500 border-t-transparent rounded-full" />
+    </div>
+  );
+}
+
 function App() {
   const settingsCtx = useSettingsProvider();
-  const storageCtx = useStorageProvider();
 
   return (
     <SettingsContext.Provider value={settingsCtx}>
-      <StorageContext.Provider value={storageCtx}>
-        <AppContent />
-      </StorageContext.Provider>
+      <AuthLoading>
+        <LoadingScreen />
+      </AuthLoading>
+      <Unauthenticated>
+        <LoginScreen />
+      </Unauthenticated>
+      <Authenticated>
+        <AuthenticatedApp />
+      </Authenticated>
     </SettingsContext.Provider>
+  );
+}
+
+function AuthenticatedApp() {
+  const storageCtx = useStorageProvider();
+
+  return (
+    <StorageContext.Provider value={storageCtx}>
+      <AppContent />
+    </StorageContext.Provider>
   );
 }
 

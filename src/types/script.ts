@@ -6,6 +6,8 @@ export interface Bubble {
   durationSeconds: number;
   /** Whether the user manually overrode the calculated duration */
   manualDuration?: boolean;
+  /** Convex storage ID for an attached image (visual bubbles only) */
+  imageId?: string;
 }
 
 export interface BubblePair {

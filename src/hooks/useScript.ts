@@ -101,6 +101,20 @@ export function useScript(initial?: Script) {
     }));
   }, []);
 
+  const updateBubbleImage = useCallback(
+    (pairId: string, imageId: string | undefined) => {
+      setScript((prev) => ({
+        ...prev,
+        pairs: prev.pairs.map((p) =>
+          p.id === pairId
+            ? { ...p, visual: { ...p.visual, imageId } }
+            : p
+        ),
+      }));
+    },
+    []
+  );
+
   const updateBubbleDuration = useCallback(
     (pairId: string, side: 'text' | 'visual', durationSeconds: number) => {
       setScript((prev) => ({
@@ -379,6 +393,7 @@ export function useScript(initial?: Script) {
     updatePairText,
     commitPairText,
     updatePairVisual,
+    updateBubbleImage,
     updateBubbleDuration,
     splitBubble,
     insertFiller,

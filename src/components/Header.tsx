@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Clock, Menu, FileDown, FileUp, Moon, Sun, Info, EyeOff, FilePlus, Trash2 } from 'lucide-react';
+import { Clock, Menu, FileDown, FileUp, Moon, Sun, Info, EyeOff, FilePlus, Trash2, LogOut, User } from 'lucide-react';
+import { useClerk } from '@clerk/clerk-react';
 import { formatTime } from '../utils/timing';
 import { useSettings } from '../hooks/useSettings';
 import { parseScriptMarkdown } from '../utils/parseMarkdown';
@@ -19,6 +20,7 @@ interface HeaderProps {
   onSwitchFile: (id: string) => void;
   onNewScript: () => void;
   onDeleteFile: (id: string) => void;
+  userName?: string;
 }
 
 export function Header({
@@ -34,8 +36,10 @@ export function Header({
   onSwitchFile,
   onNewScript,
   onDeleteFile,
+  userName,
 }: HeaderProps) {
   const { settings, toggleTheme, toggleInfoMode, setZoom } = useSettings();
+  const { signOut } = useClerk();
   const [menuOpen, setMenuOpen] = useState(false);
   const [exportMenuOpen, setExportMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -298,6 +302,23 @@ export function Header({
             >
               {settings.infoMode ? <EyeOff size={15} /> : <Info size={15} />}
               {settings.infoMode ? 'Hide info' : 'Info mode'}
+            </button>
+
+            <div className={`my-1 h-px ${dark ? 'bg-slate-700' : 'bg-slate-100'}`} />
+
+            {/* User info + sign out */}
+            <div className={`px-4 py-2 text-xs flex items-center gap-2 ${dark ? 'text-slate-500' : 'text-slate-400'}`}>
+              <User size={13} />
+              <span className="truncate">{userName}</span>
+            </div>
+            <button
+              className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
+                dark ? 'text-slate-300 hover:bg-slate-700' : 'text-slate-700 hover:bg-slate-50'
+              }`}
+              onClick={() => { signOut(); setMenuOpen(false); }}
+            >
+              <LogOut size={15} />
+              Sign out
             </button>
           </div>
         )}

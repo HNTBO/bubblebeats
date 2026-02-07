@@ -12,6 +12,7 @@ interface BubbleTimelineProps {
   onUpdateText: (pairId: string, content: string) => void;
   onCommitText: (pairId: string) => void;
   onUpdateVisual: (pairId: string, content: string) => void;
+  onUpdateImage: (pairId: string, imageId: string | undefined) => void;
   onSplit: (pairId: string, charOffset: number) => void;
   onInsertFiller: (atIndex: number) => void;
   onUpdateDuration: (pairId: string, side: 'text' | 'visual', duration: number) => void;
@@ -31,6 +32,7 @@ export function BubbleTimeline({
   onUpdateText,
   onCommitText,
   onUpdateVisual,
+  onUpdateImage,
   onSplit,
   onInsertFiller,
   onUpdateDuration,
@@ -250,6 +252,8 @@ export function BubbleTimeline({
             totalPairs={pairs.length}
             onMergeVisualUp={() => onMergeVisualUp(pair.id)}
             onMergeVisualDown={() => onMergeVisualDown(pair.id)}
+            imageId={pair.visual.imageId}
+            onImageChange={(imgId) => onUpdateImage(pair.id, imgId)}
           />
         </div>
       );
