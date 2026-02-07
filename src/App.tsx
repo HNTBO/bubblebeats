@@ -156,7 +156,11 @@ function AppContent() {
   }
 
   return (
-    <div className={`flex flex-col h-screen ${dark ? 'bg-slate-950 text-slate-200' : 'bg-slate-50 text-slate-800'}`}>
+    <div
+      className={`flex flex-col h-screen ${dark ? 'bg-slate-950 text-slate-200' : 'bg-slate-50 text-slate-800'}`}
+      onDragOver={(e) => e.preventDefault()}
+      onDrop={(e) => e.preventDefault()}
+    >
       <MigrationBanner />
       <Header
         title={script.title}
