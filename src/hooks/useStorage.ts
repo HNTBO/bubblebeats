@@ -1,4 +1,4 @@
-import { useState, useCallback, createContext, useContext, useRef, useEffect } from 'react';
+import { useState, useCallback, createContext, useContext, useRef } from 'react';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import type { Script } from '../types/script';
@@ -50,25 +50,21 @@ export function useStorageProvider(): StorageContextValue {
   // Cache loaded scripts client-side to provide sync loadFile()
   const scriptCache = useRef<Map<string, Script>>(new Map());
 
-  // Map Convex results to FileEntry format
-  const files: FileEntry[] = (convexScripts ?? []).map((s) => ({
-    id: s._id,
-    title: s.title,
-    updatedAt: s.updatedAt,
-    createdAt: s.createdAt,
-  }));
-
-  // Sync Convex data into the local cache
-  useEffect(() => {
-    if (!convexScripts) return;
-    for (const s of convexScripts) {
-      scriptCache.current.set(s._id, {
-        title: s.title,
-        totalDurationSeconds: s.totalDurationSeconds,
-        pairs: s.pairs,
-      });
-    }
-  }, [convexScripts]);
+  // Map Convex results to FileEntry format and populate cache synchronously
+  // (must happen during render so cache is ready before child effects run)
+  const files: FileEntry[] = (convexScripts ?? []).map((s) => {
+    scriptCache.current.set(s._id, {
+      title: s.title,
+      totalDurationSeconds: s.totalDurationSeconds,
+      pairs: s.pairs,
+    });
+    return {
+      id: s._id,
+      title: s.title,
+      updatedAt: s.updatedAt,
+      createdAt: s.createdAt,
+    };
+  });
 
   const setCurrentFileId = useCallback((id: string) => {
     setCurrentFileIdState(id);

@@ -6,6 +6,10 @@ import { ConvexReactClient } from 'convex/react'
 import './index.css'
 import App from './App.tsx'
 
+// Block browser from opening dropped files — must be outside React
+document.addEventListener('dragover', (e) => e.preventDefault())
+document.addEventListener('drop', (e) => e.preventDefault())
+
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string)
 
 createRoot(document.getElementById('root')!).render(

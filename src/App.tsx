@@ -34,17 +34,6 @@ function AppContent() {
   const storage = useStorage();
   const { user } = useUser();
 
-  // Block browser default drag-and-drop (opening files) globally
-  useEffect(() => {
-    const prevent = (e: DragEvent) => e.preventDefault();
-    document.addEventListener('dragover', prevent);
-    document.addEventListener('drop', prevent);
-    return () => {
-      document.removeEventListener('dragover', prevent);
-      document.removeEventListener('drop', prevent);
-    };
-  }, []);
-
   const {
     script,
     setScript,
