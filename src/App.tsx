@@ -9,11 +9,41 @@ import { StorageContext, useStorageProvider, useStorage } from './hooks/useStora
 import { MigrationBanner } from './components/MigrationBanner';
 import type { Script } from './types/script';
 
+/** Check if a script has any real content worth saving */
+function isScriptEmpty(s: Script): boolean {
+  return s.pairs.every(
+    (p) => !p.text.content.trim() && !p.visual.content.trim() && !p.visual.imageId
+  );
+}
+
+/** Derive a title from the first text content in the script */
+function deriveTitle(s: Script): string {
+  for (const p of s.pairs) {
+    const text = p.text.content.trim();
+    if (text) {
+      const words = text.split(/\s+/).slice(0, 6).join(' ');
+      return words.length < text.length ? words + '...' : words;
+    }
+  }
+  return 'Untitled Script';
+}
+
 function AppContent() {
   const { settings } = useSettings();
   const dark = settings.theme === 'dark';
   const storage = useStorage();
   const { user } = useUser();
+
+  // Block browser default drag-and-drop (opening files) globally
+  useEffect(() => {
+    const prevent = (e: DragEvent) => e.preventDefault();
+    document.addEventListener('dragover', prevent);
+    document.addEventListener('drop', prevent);
+    return () => {
+      document.removeEventListener('dragover', prevent);
+      document.removeEventListener('drop', prevent);
+    };
+  }, []);
 
   const {
     script,
@@ -64,7 +94,7 @@ function AppContent() {
     storage.setCurrentFileId(id);
   }, [storage.isLoading]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // --- Auto-save with 1s debounce ---
+  // --- Auto-save with 1s debounce (skip empty scripts, auto-title) ---
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const scriptRef = useRef(script);
   scriptRef.current = script;
@@ -74,9 +104,19 @@ function AppContent() {
 
     if (saveTimer.current) clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(() => {
-      if (storage.currentFileId && !storage.currentFileId.startsWith('pending-')) {
-        storage.saveFile(storage.currentFileId, scriptRef.current);
+      const current = scriptRef.current;
+      if (!storage.currentFileId || storage.currentFileId.startsWith('pending-')) return;
+      // Don't save blank scripts
+      if (isScriptEmpty(current)) return;
+      // Auto-generate title if still default
+      if (current.title === 'Untitled Script') {
+        const derived = deriveTitle(current);
+        if (derived !== 'Untitled Script') {
+          scriptRef.current = { ...current, title: derived };
+          setTitle(derived);
+        }
       }
+      storage.saveFile(storage.currentFileId, scriptRef.current);
     }, 1000);
 
     return () => {
@@ -86,8 +126,8 @@ function AppContent() {
 
   // --- File operations ---
   const handleSwitchFile = useCallback((id: string) => {
-    // Save current file immediately before switching
-    if (storage.currentFileId && !storage.currentFileId.startsWith('pending-')) {
+    // Save current file immediately before switching (skip if empty)
+    if (storage.currentFileId && !storage.currentFileId.startsWith('pending-') && !isScriptEmpty(scriptRef.current)) {
       storage.saveFile(storage.currentFileId, scriptRef.current);
     }
     const loaded = storage.loadFile(id);
@@ -98,8 +138,8 @@ function AppContent() {
   }, [storage, setScript]);
 
   const handleNewScript = useCallback(() => {
-    // Save current file first
-    if (storage.currentFileId && !storage.currentFileId.startsWith('pending-')) {
+    // Save current file first (skip if empty)
+    if (storage.currentFileId && !storage.currentFileId.startsWith('pending-') && !isScriptEmpty(scriptRef.current)) {
       storage.saveFile(storage.currentFileId, scriptRef.current);
     }
     const { id, script: newScript } = storage.createFile();
@@ -129,8 +169,8 @@ function AppContent() {
   }, [storage, setScript]);
 
   const handleImport = useCallback((imported: Script) => {
-    // Save current file first
-    if (storage.currentFileId && !storage.currentFileId.startsWith('pending-')) {
+    // Save current file first (skip if empty)
+    if (storage.currentFileId && !storage.currentFileId.startsWith('pending-') && !isScriptEmpty(scriptRef.current)) {
       storage.saveFile(storage.currentFileId, scriptRef.current);
     }
     // Create a new file from imported script
@@ -156,11 +196,7 @@ function AppContent() {
   }
 
   return (
-    <div
-      className={`flex flex-col h-screen ${dark ? 'bg-slate-950 text-slate-200' : 'bg-slate-50 text-slate-800'}`}
-      onDragOver={(e) => e.preventDefault()}
-      onDrop={(e) => e.preventDefault()}
-    >
+    <div className={`flex flex-col h-screen ${dark ? 'bg-slate-950 text-slate-200' : 'bg-slate-50 text-slate-800'}`}>
       <MigrationBanner />
       <Header
         title={script.title}
