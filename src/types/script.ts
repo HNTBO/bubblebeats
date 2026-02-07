@@ -24,3 +24,10 @@ export interface Script {
   totalDurationSeconds: number;
   pairs: BubblePair[];
 }
+
+export interface FileEntry {
+  id: string;
+  title: string;
+  updatedAt: number;
+  createdAt: number;
+}

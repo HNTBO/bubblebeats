@@ -183,7 +183,7 @@ export function TextBubble({
     <div
       ref={bubbleRef}
       data-editing-bubble={isEditing || undefined}
-      className={`relative group rounded-3xl border p-4 flex flex-col transition-colors ${
+      className={`relative group rounded-3xl border px-4 pb-4 ${settings.infoMode ? 'pt-7' : 'pt-4'} flex flex-col h-full transition-colors ${
         isEditing
           ? dark
             ? 'border-sky-500/60 bg-slate-800/50 shadow-[inset_0_0_12px_rgba(56,189,248,0.15)]'

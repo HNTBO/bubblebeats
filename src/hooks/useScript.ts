@@ -39,7 +39,7 @@ function createPair(text: string, visual: string): BubblePair {
   };
 }
 
-function createDefaultScript(): Script {
+export function createDefaultScript(): Script {
   return {
     title: 'Untitled Script',
     totalDurationSeconds: 120,

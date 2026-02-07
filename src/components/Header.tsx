@@ -1,10 +1,10 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Clock, Menu, FileDown, FileUp, Moon, Sun, Info, EyeOff } from 'lucide-react';
+import { Clock, Menu, FileDown, FileUp, Moon, Sun, Info, EyeOff, FilePlus, Trash2 } from 'lucide-react';
 import { formatTime } from '../utils/timing';
 import { useSettings } from '../hooks/useSettings';
 import { parseScriptMarkdown } from '../utils/parseMarkdown';
 import { exportToMarkdown, exportToJson, downloadFile } from '../utils/exportMarkdown';
-import type { Script } from '../types/script';
+import type { Script, FileEntry } from '../types/script';
 
 interface HeaderProps {
   title: string;
@@ -14,6 +14,11 @@ interface HeaderProps {
   onDurationChange: (seconds: number) => void;
   onImport: (script: Script) => void;
   script: Script;
+  files: FileEntry[];
+  currentFileId: string | null;
+  onSwitchFile: (id: string) => void;
+  onNewScript: () => void;
+  onDeleteFile: (id: string) => void;
 }
 
 export function Header({
@@ -24,6 +29,11 @@ export function Header({
   onDurationChange,
   onImport,
   script,
+  files,
+  currentFileId,
+  onSwitchFile,
+  onNewScript,
+  onDeleteFile,
 }: HeaderProps) {
   const { settings, toggleTheme, toggleInfoMode, setZoom } = useSettings();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -83,6 +93,8 @@ export function Header({
     setMenuOpen(false);
     setExportMenuOpen(false);
   }, [script]);
+
+  const sortedFiles = [...files].sort((a, b) => b.updatedAt - a.updatedAt);
 
   return (
     <header className={`flex items-center gap-4 border-b px-6 py-3 ${
@@ -171,11 +183,59 @@ export function Header({
         </button>
 
         {menuOpen && (
-          <div className={`absolute right-0 top-full mt-1 w-52 rounded-xl border shadow-lg z-50 py-1 ${
+          <div className={`absolute right-0 top-full mt-1 w-56 rounded-xl border shadow-lg z-50 py-1 ${
             dark
               ? 'bg-slate-800 border-slate-700'
               : 'bg-white border-slate-200'
           }`}>
+            {/* New script */}
+            <button
+              className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
+                dark ? 'text-slate-300 hover:bg-slate-700' : 'text-slate-700 hover:bg-slate-50'
+              }`}
+              onClick={() => { onNewScript(); setMenuOpen(false); }}
+            >
+              <FilePlus size={15} />
+              New script
+            </button>
+
+            {/* Saved scripts list */}
+            {sortedFiles.length > 0 && (
+              <>
+                <div className={`my-1 h-px ${dark ? 'bg-slate-700' : 'bg-slate-100'}`} />
+                <div className="max-h-48 overflow-y-auto">
+                  {sortedFiles.map((file) => {
+                    const isActive = file.id === currentFileId;
+                    return (
+                      <div
+                        key={file.id}
+                        className={`group flex items-center gap-2 px-4 py-2 text-sm transition-colors cursor-pointer ${
+                          isActive
+                            ? dark ? 'bg-sky-900/30 text-sky-400' : 'bg-sky-50 text-sky-600'
+                            : dark ? 'text-slate-300 hover:bg-slate-700' : 'text-slate-700 hover:bg-slate-50'
+                        }`}
+                        onClick={() => { if (!isActive) { onSwitchFile(file.id); setMenuOpen(false); } }}
+                      >
+                        <span className="truncate flex-1">{file.title || 'Untitled'}</span>
+                        {!isActive && (
+                          <button
+                            className={`opacity-0 group-hover:opacity-100 p-0.5 rounded transition-opacity ${
+                              dark ? 'text-slate-500 hover:text-red-400' : 'text-slate-400 hover:text-red-500'
+                            }`}
+                            onClick={(e) => { e.stopPropagation(); onDeleteFile(file.id); }}
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+
+            <div className={`my-1 h-px ${dark ? 'bg-slate-700' : 'bg-slate-100'}`} />
+
             <button
               className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
                 dark ? 'text-slate-300 hover:bg-slate-700' : 'text-slate-700 hover:bg-slate-50'

@@ -290,7 +290,7 @@ export function BubbleTimeline({
 
             {/* Single CSS Grid for all pairs */}
             <div
-              className="px-4 pb-4"
+              className="px-4"
               style={{
                 display: 'grid',
                 gridTemplateColumns: '1fr 1fr',
@@ -341,6 +341,9 @@ export function BubbleTimeline({
                 </div>
               </div>
             )}
+
+            {/* Bottom spacing */}
+            <div className="h-4" />
           </div>
         </div>
       </div>
