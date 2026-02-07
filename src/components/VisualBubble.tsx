@@ -35,6 +35,7 @@ export function VisualBubble({
   const [dragging, setDragging] = useState(false);
   const dragCounter = useRef(0);
   const [uploading, setUploading] = useState(false);
+  const [lightbox, setLightbox] = useState(false);
 
   const generateUploadUrl = useMutation(api.images.generateUploadUrl);
   const removeImage = useMutation(api.images.removeImage);
@@ -76,7 +77,8 @@ export function VisualBubble({
     if (file) handleUpload(file);
   }, [handleUpload]);
 
-  const handleRemoveImage = useCallback(async () => {
+  const handleRemoveImage = useCallback(async (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (!imageId || !onImageChange) return;
     onImageChange(undefined);
     try {
@@ -88,7 +90,7 @@ export function VisualBubble({
 
   return (
     <div
-      className={`relative group rounded-3xl border p-4 h-full ${
+      className={`relative group rounded-3xl border p-4 h-full flex gap-3 ${
         dark
           ? 'border-emerald-800/40 bg-emerald-950/20'
           : 'border-emerald-200 bg-emerald-50/50'
@@ -118,30 +120,32 @@ export function VisualBubble({
         />
       )}
 
-      {/* Image display */}
+      {/* Image thumbnail */}
       {imageUrl && (
-        <div className="relative mb-2 group/img">
+        <div className="relative shrink-0 group/img self-start">
           <img
             src={imageUrl}
             alt=""
-            className="w-full rounded-xl object-cover max-h-40"
+            className={`rounded-2xl object-contain cursor-pointer max-h-20 max-w-24 ${
+              dark ? 'ring-1 ring-emerald-800/50' : 'ring-1 ring-emerald-200'
+            }`}
+            onClick={() => setLightbox(true)}
           />
           <button
-            className={`absolute top-1 right-1 p-1 rounded-full opacity-0 group-hover/img:opacity-100 transition-opacity ${
-              dark ? 'bg-slate-900/80 text-red-400 hover:text-red-300' : 'bg-white/80 text-red-500 hover:text-red-600'
-            }`}
+            className={`absolute -top-1.5 -right-1.5 p-0.5 rounded-full opacity-0 group-hover/img:opacity-100 transition-opacity ${
+              dark ? 'bg-slate-800 text-red-400 hover:text-red-300' : 'bg-white text-red-500 hover:text-red-600'
+            } shadow-sm`}
             onClick={handleRemoveImage}
           >
-            <X size={12} />
+            <X size={10} />
           </button>
         </div>
       )}
 
       {/* Upload indicator */}
       {uploading && (
-        <div className={`flex items-center gap-2 mb-2 text-xs ${dark ? 'text-emerald-400' : 'text-emerald-600'}`}>
+        <div className={`flex items-center gap-2 shrink-0 self-center text-xs ${dark ? 'text-emerald-400' : 'text-emerald-600'}`}>
           <div className="animate-spin w-3 h-3 border border-current border-t-transparent rounded-full" />
-          Uploading...
         </div>
       )}
 
@@ -161,11 +165,32 @@ export function VisualBubble({
         ref={textareaRef}
         value={content}
         onChange={(e) => onContentChange(e.target.value)}
-        className={`w-full bg-transparent text-sm outline-none resize-none leading-relaxed overflow-hidden italic ${
+        className={`w-full bg-transparent text-sm outline-none resize-none leading-relaxed overflow-hidden italic min-w-0 ${
           dark ? 'text-emerald-300/80' : 'text-emerald-700/80'
         }`}
         placeholder={showPlaceholder ? 'Describe the visual...' : undefined}
       />
+
+      {/* Lightbox */}
+      {lightbox && imageUrl && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 cursor-pointer"
+          onClick={() => setLightbox(false)}
+        >
+          <button
+            className="absolute top-6 right-6 text-white/70 hover:text-white"
+            onClick={() => setLightbox(false)}
+          >
+            <X size={24} />
+          </button>
+          <img
+            src={imageUrl}
+            alt=""
+            className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
     </div>
   );
 }
