@@ -180,28 +180,20 @@ export function BubbleTimeline({
       </div>
     );
 
-    // Visual column separator: split button when facing a span
+    // Visual column separator: scissors to split the visual span (hover only)
     if (pair.visualSpan === 0) {
       gridItems.push(
         <div
           key={`vsep-${pair.id}`}
-          className="relative group/vsplit"
+          className="relative group/vsplit cursor-pointer"
           style={{ gridColumn: 2, gridRow: sepRow }}
+          onClick={() => onSplitVisualSpan(i)}
         >
-          {/* Rounded dashed separator line */}
-          <div className="absolute top-1/2 -translate-y-1/2 left-4 right-4 h-px border-t border-dashed border-stroke-visual rounded-full" />
-          {/* Button row: + and scissors */}
-          <div className="absolute -top-2 -bottom-2 left-0 right-0 flex items-center justify-center gap-1 z-10">
-            <div
-              className="rounded-full p-0.5 opacity-0 group-hover/vsplit:opacity-100 transition-opacity bg-surface-active shadow-sm cursor-pointer"
-              onClick={() => onInsertFiller(i)}
-            >
-              <Plus size={12} className="text-accent-soft" />
-            </div>
-            <div
-              className="rounded-full p-0.5 opacity-0 group-hover/vsplit:opacity-100 transition-opacity bg-surface-active shadow-sm cursor-pointer"
-              onClick={() => onSplitVisualSpan(i)}
-            >
+          {/* Dashed separator line — hover only, edge-to-edge */}
+          <div className="absolute top-1/2 -translate-y-1/2 left-0 right-0 h-px border-t border-dashed border-stroke-visual opacity-0 group-hover/vsplit:opacity-100 transition-opacity" />
+          {/* Scissors button */}
+          <div className="absolute -top-2 -bottom-2 left-0 right-0 flex items-center justify-center z-10">
+            <div className="rounded-full p-0.5 opacity-0 group-hover/vsplit:opacity-100 transition-opacity bg-surface-active shadow-sm">
               <Scissors size={12} className="text-accent-soft" />
             </div>
           </div>
