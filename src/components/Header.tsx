@@ -116,6 +116,12 @@ export function Header({
         type="text"
         value={title}
         onChange={(e) => onTitleChange(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === 'Escape') {
+            e.preventDefault();
+            (e.target as HTMLInputElement).blur();
+          }
+        }}
         className={`bg-transparent text-sm font-medium outline-none border-b border-transparent px-1 py-0.5 min-w-48 ${
           dark
             ? 'text-slate-200 focus:border-slate-500'

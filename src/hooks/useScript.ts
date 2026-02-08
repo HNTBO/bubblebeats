@@ -147,9 +147,12 @@ export function useScript(initial?: Script) {
         const textBefore = pair.text.content.slice(0, charOffset).trim();
         const textAfter = pair.text.content.slice(charOffset).trim();
 
-        if (!textBefore || !textAfter) return prev;
+        // Need at least some text before the split point
+        if (!textBefore) return prev;
 
-        const ratio = charOffset / pair.text.content.length;
+        const ratio = pair.text.content.length > 0
+          ? charOffset / pair.text.content.length
+          : 1;
         const visualSplitPos = Math.round(pair.visual.content.length * ratio);
         const visualBefore = pair.visual.content.slice(0, visualSplitPos).trim();
         const visualAfter = pair.visual.content.slice(visualSplitPos).trim();

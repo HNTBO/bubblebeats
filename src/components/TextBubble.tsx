@@ -85,12 +85,12 @@ export function TextBubble({
       if (e.ctrlKey && isEditing && !isFiller && textareaRef.current) {
         e.preventDefault();
         const offset = textareaRef.current.selectionStart;
-        if (offset > 0 && offset < content.length) {
+        if (offset > 0) {
           onSplit(offset);
         }
       }
     },
-    [content, isEditing, isFiller, onSplit]
+    [isEditing, isFiller, onSplit]
   );
 
   const handleKeyDown = useCallback(
@@ -98,9 +98,25 @@ export function TextBubble({
       if (e.key === 'Escape' && isEditing) {
         e.preventDefault();
         onExitEdit();
+        return;
+      }
+      // Shift+Enter → exit edit mode
+      if (e.key === 'Enter' && e.shiftKey && isEditing) {
+        e.preventDefault();
+        onExitEdit();
+        return;
+      }
+      // Ctrl+Enter → split at cursor
+      if (e.key === 'Enter' && e.ctrlKey && isEditing && !isFiller && textareaRef.current) {
+        e.preventDefault();
+        const offset = textareaRef.current.selectionStart;
+        if (offset > 0) {
+          onSplit(offset);
+        }
+        return;
       }
     },
-    [isEditing, onExitEdit]
+    [isEditing, isFiller, onExitEdit, onSplit]
   );
 
   const handleMouseDown = useCallback(
