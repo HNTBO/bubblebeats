@@ -95,7 +95,7 @@ export function Header({
   return (
     <header className="relative flex items-center border-b border-stroke-strong px-6 py-3 bg-surface-alt">
       {/* Logo — left */}
-      <Logo height={18} className="text-text-primary shrink-0" onBubbleClick={toggleTheme} />
+      <Logo height={18} className="text-text-primary shrink-0" onBubbleClick={toggleTheme} onBeatsClick={toggleInfoMode} />
 
       {/* Title — absolutely centered on the header */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">

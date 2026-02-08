@@ -85,7 +85,7 @@ export function PopOverlay({
           <div className="w-8 h-8 rounded-lg bg-white/20 hover:bg-red-500/40 transition-colors flex items-center justify-center">
             <Trash2 size={14} className="text-white" />
           </div>
-          <span className="text-[9px] text-white/80">erase</span>
+          <span className="text-[9px] text-white/80">pop</span>
         </button>
       )}
 
