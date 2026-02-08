@@ -72,7 +72,6 @@ export function TextBubble({
 
   const handleDoubleClick = useCallback(
     (e: React.MouseEvent) => {
-      if (e.ctrlKey) return; // Ctrl+click is for splitting, not editing
       if (!isFiller) {
         e.stopPropagation();
         onEnterEdit();
@@ -83,15 +82,21 @@ export function TextBubble({
 
   const handleClick = useCallback(
     (e: React.MouseEvent) => {
-      if (e.ctrlKey && isEditing && !isFiller && textareaRef.current) {
-        e.preventDefault();
+      if (!e.ctrlKey || isFiller) return;
+      e.preventDefault();
+      e.stopPropagation();
+      if (isEditing && textareaRef.current) {
+        // Already editing — split at cursor
         const offset = textareaRef.current.selectionStart;
         if (offset > 0) {
           onSplit(offset);
         }
+      } else {
+        // Not editing — enter edit mode
+        onEnterEdit();
       }
     },
-    [isEditing, isFiller, onSplit]
+    [isEditing, isFiller, onSplit, onEnterEdit]
   );
 
   const handleKeyDown = useCallback(
