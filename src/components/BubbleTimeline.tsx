@@ -168,21 +168,25 @@ export function BubbleTimeline({
     const sepRow = 2 * i + 1;
     const contentRow = 2 * i + 2;
 
-    // Separator + button (voice column)
-    gridItems.push(
-      <div
-        key={`sep-${pair.id}`}
-        className="relative cursor-pointer group/boundary"
-        style={{ gridColumn: 1, gridRow: sepRow }}
-        onClick={() => onInsertFiller(i)}
-      >
-        <div className="absolute -top-2 -bottom-2 left-0 right-0 flex items-center justify-center z-10">
-          <div className="rounded-full p-0.5 opacity-0 group-hover/boundary:opacity-100 transition-opacity bg-surface-overlay shadow-sm">
-            <Plus size={12} className="text-text-secondary" />
+    // Separator + button (voice column) — hide next to fillers to avoid double pauses
+    const prevIsFiller = i > 0 && pairs[i - 1].text.type === 'filler';
+    const currentIsFiller = pair.text.type === 'filler';
+    if (!prevIsFiller && !currentIsFiller) {
+      gridItems.push(
+        <div
+          key={`sep-${pair.id}`}
+          className="relative cursor-pointer group/boundary"
+          style={{ gridColumn: 1, gridRow: sepRow }}
+          onClick={() => onInsertFiller(i)}
+        >
+          <div className="absolute -top-2 -bottom-2 left-0 right-0 flex items-center justify-center z-10">
+            <div className="rounded-full p-0.5 opacity-0 group-hover/boundary:opacity-100 transition-opacity bg-surface-overlay shadow-sm">
+              <Plus size={12} className="text-text-secondary" />
+            </div>
           </div>
         </div>
-      </div>
-    );
+      );
+    }
 
     // Visual column separator: scissors to split the visual span (hover only)
     if (pair.visualSpan === 0) {
