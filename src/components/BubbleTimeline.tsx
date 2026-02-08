@@ -4,11 +4,13 @@ import { TextBubble } from './TextBubble';
 import { VisualBubble } from './VisualBubble';
 import { formatTime } from '../utils/timing';
 import { useSettings } from '../hooks/useSettings';
-import { Plus, Scissors } from 'lucide-react';
+import { Plus, Scissors, Clock } from 'lucide-react';
 
 interface BubbleTimelineProps {
   pairs: BubblePair[];
   totalDuration: number;
+  currentDuration: number;
+  onDurationChange: (seconds: number) => void;
   onUpdateText: (pairId: string, content: string) => void;
   onCommitText: (pairId: string) => void;
   onUpdateVisual: (pairId: string, content: string) => void;
@@ -29,6 +31,8 @@ const GAP_PX = 8;
 export function BubbleTimeline({
   pairs,
   totalDuration,
+  currentDuration,
+  onDurationChange,
   onUpdateText,
   onCommitText,
   onUpdateVisual,
@@ -276,17 +280,38 @@ export function BubbleTimeline({
               transformOrigin: 'top center',
             }}
           >
-            {/* Column headers */}
-            <div className="grid grid-cols-2 px-4 py-2" style={{ gap: GAP_PX }}>
-              <div className="text-center bg-surface">
-                <span className="text-xs font-medium uppercase tracking-wider text-text-secondary">
-                  Voice
+            {/* Timing bubble + column headers */}
+            <div className="px-4 pt-3 pb-2 flex flex-col gap-2">
+              {/* Timing indicator — centered between columns */}
+              <div className="flex items-center justify-center gap-2 text-sm">
+                <Clock size={13} className="text-text-secondary" />
+                <span className={overBudget ? 'text-danger font-medium' : 'text-text-primary'}>
+                  {formatTime(currentDuration)}
                 </span>
+                <span className="text-text-muted">/</span>
+                <input
+                  type="number"
+                  value={totalDuration}
+                  onChange={(e) => onDurationChange(Math.max(1, Number(e.target.value)))}
+                  className="w-14 text-sm rounded px-1.5 py-0.5 border outline-none bg-surface-sunken text-text-primary border-stroke focus:border-accent text-center"
+                  min={1}
+                  step={10}
+                />
+                <span className="text-xs text-text-muted">sec</span>
               </div>
-              <div className="text-center bg-surface">
-                <span className="text-xs font-medium uppercase tracking-wider text-text-secondary">
-                  Visual
-                </span>
+
+              {/* Column labels */}
+              <div className="grid grid-cols-2" style={{ gap: GAP_PX }}>
+                <div className="text-center">
+                  <span className="text-xs font-medium uppercase tracking-wider text-text-secondary">
+                    Voice
+                  </span>
+                </div>
+                <div className="text-center">
+                  <span className="text-xs font-medium uppercase tracking-wider text-text-secondary">
+                    Visual
+                  </span>
+                </div>
               </div>
             </div>
 

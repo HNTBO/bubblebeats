@@ -187,10 +187,7 @@ function AppContent() {
       <MigrationBanner />
       <Header
         title={script.title}
-        totalDuration={script.totalDurationSeconds}
-        currentDuration={currentDuration}
         onTitleChange={setTitle}
-        onDurationChange={setTotalDuration}
         onImport={handleImport}
         script={script}
         files={storage.files}
@@ -203,6 +200,8 @@ function AppContent() {
       <BubbleTimeline
         pairs={script.pairs}
         totalDuration={script.totalDurationSeconds}
+        currentDuration={currentDuration}
+        onDurationChange={setTotalDuration}
         onUpdateText={updatePairText}
         onCommitText={commitPairText}
         onUpdateVisual={updatePairVisual}
