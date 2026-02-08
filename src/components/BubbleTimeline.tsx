@@ -44,7 +44,6 @@ export function BubbleTimeline({
   onSplitVisualSpan,
 }: BubbleTimelineProps) {
   const { settings } = useSettings();
-  const dark = settings.theme === 'dark';
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -144,7 +143,7 @@ export function BubbleTimeline({
     return () => document.removeEventListener('mousedown', handleMouseDown);
   }, [editingPairId, onCommitText]);
 
-  const scrollbarClass = `custom-scrollbar ${dark ? 'scrollbar-dark' : 'scrollbar-light'}`;
+  const scrollbarClass = `custom-scrollbar scrollbar-light dark:scrollbar-dark`;
 
   // Build grid row templates:
   // For each pair i: separator row (GAP_PX height) + content row (auto)
@@ -174,10 +173,8 @@ export function BubbleTimeline({
         onClick={() => onInsertFiller(i)}
       >
         <div className="absolute -top-2 -bottom-2 left-0 right-0 flex items-center justify-center z-10">
-          <div className={`rounded-full p-0.5 opacity-0 group-hover/boundary:opacity-100 transition-opacity ${
-            dark ? 'bg-slate-800 shadow-sm' : 'bg-white shadow-sm'
-          }`}>
-            <Plus size={12} className={dark ? 'text-slate-400' : 'text-slate-500'} />
+          <div className="rounded-full p-0.5 opacity-0 group-hover/boundary:opacity-100 transition-opacity bg-surface-overlay shadow-sm">
+            <Plus size={12} className="text-text-secondary" />
           </div>
         </div>
       </div>
@@ -188,15 +185,24 @@ export function BubbleTimeline({
       gridItems.push(
         <div
           key={`vsep-${pair.id}`}
-          className="relative cursor-pointer group/vsplit"
+          className="relative group/vsplit"
           style={{ gridColumn: 2, gridRow: sepRow }}
-          onClick={() => onSplitVisualSpan(i)}
         >
-          <div className="absolute -top-2 -bottom-2 left-0 right-0 flex items-center justify-center z-10">
-            <div className={`rounded-full p-0.5 opacity-0 group-hover/vsplit:opacity-100 transition-opacity ${
-              dark ? 'bg-violet-900 shadow-sm' : 'bg-violet-50 shadow-sm'
-            }`}>
-              <Scissors size={12} className={dark ? 'text-violet-400' : 'text-violet-600'} />
+          {/* Rounded dashed separator line */}
+          <div className="absolute top-1/2 -translate-y-1/2 left-4 right-4 h-px border-t border-dashed border-stroke-visual rounded-full" />
+          {/* Button row: + and scissors */}
+          <div className="absolute -top-2 -bottom-2 left-0 right-0 flex items-center justify-center gap-1 z-10">
+            <div
+              className="rounded-full p-0.5 opacity-0 group-hover/vsplit:opacity-100 transition-opacity bg-surface-active shadow-sm cursor-pointer"
+              onClick={() => onInsertFiller(i)}
+            >
+              <Plus size={12} className="text-accent-soft" />
+            </div>
+            <div
+              className="rounded-full p-0.5 opacity-0 group-hover/vsplit:opacity-100 transition-opacity bg-surface-active shadow-sm cursor-pointer"
+              onClick={() => onSplitVisualSpan(i)}
+            >
+              <Scissors size={12} className="text-accent-soft" />
             </div>
           </div>
         </div>
@@ -280,13 +286,13 @@ export function BubbleTimeline({
           >
             {/* Column headers */}
             <div className="grid grid-cols-2 px-4 py-2" style={{ gap: GAP_PX }}>
-              <div className={`text-center ${dark ? 'bg-slate-950' : 'bg-slate-100'}`}>
-                <span className={`text-xs font-medium uppercase tracking-wider ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
+              <div className="text-center bg-surface">
+                <span className="text-xs font-medium uppercase tracking-wider text-text-secondary">
                   Voice
                 </span>
               </div>
-              <div className={`text-center ${dark ? 'bg-slate-950' : 'bg-slate-100'}`}>
-                <span className={`text-xs font-medium uppercase tracking-wider ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
+              <div className="text-center bg-surface">
+                <span className="text-xs font-medium uppercase tracking-wider text-text-secondary">
                   Visual
                 </span>
               </div>
@@ -313,20 +319,12 @@ export function BubbleTimeline({
                   className="grid grid-cols-2 items-stretch"
                   style={{ gap: GAP_PX, minHeight: fillerMinHeight }}
                 >
-                  <div className={`rounded-3xl border border-dashed flex items-center justify-center select-none ${
-                    dark
-                      ? 'border-slate-700 bg-slate-900/40'
-                      : 'border-slate-200 bg-slate-50/60'
-                  }`}>
-                    <span className={`text-[10px] uppercase tracking-wider ${dark ? 'text-slate-600' : 'text-slate-400'}`}>
+                  <div className="rounded-3xl border border-dashed flex items-center justify-center select-none border-stroke-subtle bg-surface-sunken">
+                    <span className="text-[10px] uppercase tracking-wider text-text-info">
                       {formatTime(remainingTime)} remaining
                     </span>
                   </div>
-                  <div className={`rounded-3xl border border-dashed ${
-                    dark
-                      ? 'border-slate-700 bg-slate-900/40'
-                      : 'border-slate-200 bg-slate-50/60'
-                  }`} />
+                  <div className="rounded-3xl border border-dashed border-stroke-subtle bg-surface-sunken" />
                 </div>
               </div>
             )}
@@ -334,12 +332,8 @@ export function BubbleTimeline({
             {/* Over budget */}
             {overBudget && (
               <div className="px-4 pt-2">
-                <div className={`rounded-3xl border border-dashed flex items-center justify-center py-2 ${
-                  dark
-                    ? 'border-red-500/40 bg-red-950/20'
-                    : 'border-red-300 bg-red-50'
-                }`}>
-                  <span className="text-[10px] uppercase tracking-wider text-red-400">
+                <div className="rounded-3xl border border-dashed flex items-center justify-center py-2 border-stroke-error bg-surface-error">
+                  <span className="text-[10px] uppercase tracking-wider text-danger">
                     over by {formatTime(textDuration - totalDuration)}
                   </span>
                 </div>

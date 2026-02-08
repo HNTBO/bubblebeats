@@ -1,7 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useMutation } from 'convex/react';
 import { api } from '../../convex/_generated/api';
-import { useSettings } from '../hooks/useSettings';
 import type { Script } from '../types/script';
 
 const FILES_KEY = 'bubblebeats-files';
@@ -47,8 +46,6 @@ function clearLegacyStorage() {
 }
 
 export function MigrationBanner() {
-  const { settings } = useSettings();
-  const dark = settings.theme === 'dark';
   const createMutation = useMutation(api.scripts.create);
 
   const [legacyScripts] = useState(() => getLegacyScripts());
@@ -79,10 +76,10 @@ export function MigrationBanner() {
 
   if (done) {
     return (
-      <div className={`px-6 py-2 text-sm flex items-center justify-between ${dark ? 'bg-violet-900/30 text-violet-300' : 'bg-violet-50 text-violet-700'}`}>
+      <div className="px-6 py-2 text-sm flex items-center justify-between bg-surface-active text-accent-soft">
         <span>Imported {legacyScripts.length} script{legacyScripts.length !== 1 ? 's' : ''} from local storage.</span>
         <button
-          className={`text-xs underline ${dark ? 'text-violet-400' : 'text-violet-600'}`}
+          className="text-xs underline text-accent"
           onClick={() => setDismissed(true)}
         >
           Dismiss
@@ -92,20 +89,20 @@ export function MigrationBanner() {
   }
 
   return (
-    <div className={`px-6 py-2 text-sm flex items-center justify-between ${dark ? 'bg-amber-900/30 text-amber-300' : 'bg-amber-50 text-amber-700'}`}>
+    <div className="px-6 py-2 text-sm flex items-center justify-between bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
       <span>
         Found {legacyScripts.length} script{legacyScripts.length !== 1 ? 's' : ''} in local storage. Import to your cloud account?
       </span>
       <div className="flex gap-2">
         <button
-          className={`px-3 py-1 rounded text-xs font-medium ${dark ? 'bg-amber-700 text-amber-100 hover:bg-amber-600' : 'bg-amber-200 text-amber-800 hover:bg-amber-300'}`}
+          className="px-3 py-1 rounded text-xs font-medium bg-amber-200 text-amber-800 hover:bg-amber-300 dark:bg-amber-700 dark:text-amber-100 dark:hover:bg-amber-600"
           onClick={handleMigrate}
           disabled={migrating}
         >
           {migrating ? 'Importing...' : 'Import'}
         </button>
         <button
-          className={`px-3 py-1 rounded text-xs ${dark ? 'text-amber-400 hover:text-amber-300' : 'text-amber-600 hover:text-amber-500'}`}
+          className="px-3 py-1 rounded text-xs text-amber-600 hover:text-amber-500 dark:text-amber-400 dark:hover:text-amber-300"
           onClick={() => setDismissed(true)}
         >
           Skip

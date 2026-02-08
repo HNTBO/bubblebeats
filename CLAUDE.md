@@ -29,7 +29,7 @@ npx tsc --noEmit     # TypeScript type check
 src/
 ├── App.tsx                    # Main app shell with auth gate + storage provider
 ├── main.tsx                   # Entry point (ClerkProvider + ConvexProvider)
-├── index.css                  # Tailwind import + custom scrollbar styles
+├── index.css                  # Tailwind import + theme tokens + custom scrollbar styles
 ├── components/
 │   ├── BubbleTimeline.tsx     # Two-column layout orchestrator, edit mode coordination
 │   ├── Header.tsx             # Title, duration, zoom, hamburger menu, user/sign-out
@@ -63,7 +63,7 @@ convex/
 
 **State Management**:
 - `useScript` — all script mutations (split, insert filler, update text/visual/image, commit duration recalc)
-- `useSettings` — theme/infoMode/zoom via React Context, persisted in `localStorage` as `bubblebeats-settings`
+- `useSettings` — theme/infoMode/zoom via React Context, persisted in `localStorage` as `bubblebeats-settings`. Syncs `.dark` class on `<html>` for CSS custom properties
 - `useStorage` — file CRUD backed by Convex queries/mutations with client-side cache and debounced saves
 
 **Auth Flow**:
@@ -116,6 +116,29 @@ Managed via hamburger menu in header:
 - **Zoom**: Slider from 100% width (scrollable) to fit-height (no scroll)
 
 All persisted in `localStorage` (device-specific, not synced).
+
+## Theme System
+
+All colors are defined as CSS custom properties in `src/index.css`, with `:root` (light) and `.dark` (dark) blocks. Registered via Tailwind v4 `@theme` block so they work as utility classes (e.g. `bg-surface`, `text-primary`, `border-stroke`).
+
+**How it works**: `useSettings` toggles `.dark` on `<html>` → CSS vars switch → all colors update automatically. No `dark ? 'class-a' : 'class-b'` ternaries needed.
+
+**Token categories** (25 colors + 2 shadows):
+
+| Category | Tokens | Usage |
+|---|---|---|
+| Surfaces (9) | `surface`, `surface-alt`, `surface-raised`, `surface-sunken`, `surface-overlay`, `surface-visual`, `surface-hover`, `surface-active`, `surface-error` | Backgrounds |
+| Strokes (7) | `stroke`, `stroke-strong`, `stroke-subtle`, `stroke-filler`, `stroke-visual`, `stroke-editing`, `stroke-error` | Borders |
+| Text (5) | `text-primary`, `text-secondary`, `text-muted`, `text-visual`, `text-info` | Text colors |
+| Semantic (4) | `accent`, `accent-soft`, `brand`, `danger` | Focus, branding, errors |
+| Shadows (2) | `--shadow-editing`, `--shadow-error` | Used via `shadow-[var(--shadow-editing)]` |
+
+**Not tokenized** (stays as explicit classes):
+- PopOverlay: white/black only (theme-agnostic overlay)
+- MigrationBanner: amber colors (one-time UI, uses `dark:` variant)
+- LoginScreen / LoadingScreen: always dark (pre-auth)
+
+**Adding new colors**: Add to both `:root` and `.dark` blocks in `index.css`, register in `@theme` block. Use as `bg-{token}`, `text-{token}`, `border-{token}`.
 
 ## Issue Tracking (Beads)
 

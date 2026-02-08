@@ -4,7 +4,7 @@ import { Authenticated, Unauthenticated, AuthLoading } from 'convex/react';
 import { Header } from './components/Header';
 import { BubbleTimeline } from './components/BubbleTimeline';
 import { useScript } from './hooks/useScript';
-import { SettingsContext, useSettingsProvider, useSettings } from './hooks/useSettings';
+import { SettingsContext, useSettingsProvider } from './hooks/useSettings';
 import { StorageContext, useStorageProvider, useStorage } from './hooks/useStorage';
 import { MigrationBanner } from './components/MigrationBanner';
 import type { Script } from './types/script';
@@ -29,8 +29,6 @@ function deriveTitle(s: Script): string {
 }
 
 function AppContent() {
-  const { settings } = useSettings();
-  const dark = settings.theme === 'dark';
   const storage = useStorage();
   const { user } = useUser();
 
@@ -175,7 +173,7 @@ function AppContent() {
 
   if (storage.isLoading) {
     return (
-      <div className={`flex items-center justify-center h-screen ${dark ? 'bg-slate-950 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>
+      <div className="flex items-center justify-center h-screen bg-surface text-text-secondary">
         <div className="text-center">
           <div className="animate-spin w-8 h-8 border-2 border-violet-500 border-t-transparent rounded-full mx-auto mb-3" />
           <p className="text-sm">Loading scripts...</p>
@@ -185,7 +183,7 @@ function AppContent() {
   }
 
   return (
-    <div className={`flex flex-col h-screen ${dark ? 'bg-slate-950 text-slate-200' : 'bg-slate-100 text-slate-800'}`}>
+    <div className="flex flex-col h-screen bg-surface text-text-primary">
       <MigrationBanner />
       <Header
         title={script.title}
@@ -219,9 +217,7 @@ function AppContent() {
         onMergeVisualDown={mergeVisualDown}
         onSplitVisualSpan={splitVisualSpan}
       />
-      <footer className={`border-t px-6 py-1.5 text-[10px] flex justify-between ${
-        dark ? 'border-slate-800 text-slate-600' : 'border-slate-200 text-slate-400'
-      }`}>
+      <footer className="border-t border-stroke-subtle px-6 py-1.5 text-[10px] flex justify-between text-text-info">
         <span>Double-click text to edit | Ctrl+Click to split | Click + to add pause | Drag pause edge to resize | Hover X to pop/merge</span>
         <span>{script.pairs.length} segments</span>
       </footer>

@@ -1,7 +1,6 @@
 import { useRef, useLayoutEffect, useState, useCallback } from 'react';
 import { useMutation, useQuery } from 'convex/react';
 import { api } from '../../convex/_generated/api';
-import { useSettings } from '../hooks/useSettings';
 import { X, ImagePlus } from 'lucide-react';
 import { PopOverlay } from './PopOverlay';
 
@@ -28,8 +27,6 @@ export function VisualBubble({
   imageId,
   onImageChange,
 }: VisualBubbleProps) {
-  const { settings } = useSettings();
-  const dark = settings.theme === 'dark';
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [showPop, setShowPop] = useState(false);
   const [dragging, setDragging] = useState(false);
@@ -90,11 +87,7 @@ export function VisualBubble({
 
   return (
     <div
-      className={`relative group rounded-3xl border p-4 h-full flex gap-3 ${
-        dark
-          ? 'border-violet-500/30 bg-violet-900/25'
-          : 'border-violet-200 bg-violet-50/50'
-      } ${dragging ? (dark ? 'ring-2 ring-violet-400/50' : 'ring-2 ring-violet-300') : ''}`}
+      className={`relative group rounded-3xl border p-4 h-full flex gap-3 border-stroke-visual bg-surface-visual ${dragging ? 'ring-2 ring-accent' : ''}`}
       onDragEnter={(e) => { e.preventDefault(); dragCounter.current++; setDragging(true); }}
       onDragOver={(e) => { e.preventDefault(); }}
       onDragLeave={() => { dragCounter.current--; if (dragCounter.current <= 0) { dragCounter.current = 0; setDragging(false); } }}
@@ -102,7 +95,7 @@ export function VisualBubble({
     >
       {/* Pop icon — top right, on hover */}
       <button
-        className={`absolute top-2 right-3 opacity-0 group-hover:opacity-100 transition-opacity z-10 ${dark ? 'text-violet-400 hover:text-violet-200' : 'text-violet-400 hover:text-violet-600'}`}
+        className="absolute top-2 right-3 opacity-0 group-hover:opacity-100 transition-opacity z-10 text-accent hover:text-accent-soft"
         onClick={(e) => { e.stopPropagation(); setShowPop(true); }}
       >
         <X size={14} />
@@ -126,15 +119,11 @@ export function VisualBubble({
           <img
             src={imageUrl}
             alt=""
-            className={`rounded-2xl object-contain cursor-pointer max-h-20 max-w-24 ${
-              dark ? 'ring-1 ring-violet-500/40' : 'ring-1 ring-violet-200'
-            }`}
+            className="rounded-2xl object-contain cursor-pointer max-h-20 max-w-24 ring-1 ring-stroke-visual"
             onClick={() => setLightbox(true)}
           />
           <button
-            className={`absolute -top-1.5 -right-1.5 p-0.5 rounded-full opacity-0 group-hover/img:opacity-100 transition-opacity ${
-              dark ? 'bg-slate-800 text-red-400 hover:text-red-300' : 'bg-white text-red-500 hover:text-red-600'
-            } shadow-sm`}
+            className="absolute -top-1.5 -right-1.5 p-0.5 rounded-full opacity-0 group-hover/img:opacity-100 transition-opacity bg-surface-overlay text-danger hover:text-danger shadow-sm"
             onClick={handleRemoveImage}
           >
             <X size={10} />
@@ -144,17 +133,15 @@ export function VisualBubble({
 
       {/* Upload indicator */}
       {uploading && (
-        <div className={`flex items-center gap-2 shrink-0 self-center text-xs ${dark ? 'text-violet-400' : 'text-violet-600'}`}>
+        <div className="flex items-center gap-2 shrink-0 self-center text-xs text-accent">
           <div className="animate-spin w-3 h-3 border border-current border-t-transparent rounded-full" />
         </div>
       )}
 
       {/* Drop zone hint when dragging */}
       {dragging && (
-        <div className={`absolute inset-0 flex items-center justify-center rounded-3xl z-20 pointer-events-none ${
-          dark ? 'bg-violet-950/80' : 'bg-violet-50/80'
-        }`}>
-          <div className={`flex items-center gap-2 text-sm ${dark ? 'text-violet-300' : 'text-violet-600'}`}>
+        <div className="absolute inset-0 flex items-center justify-center rounded-3xl z-20 pointer-events-none bg-surface-visual">
+          <div className="flex items-center gap-2 text-sm text-accent-soft">
             <ImagePlus size={18} />
             Drop image here
           </div>
@@ -165,9 +152,7 @@ export function VisualBubble({
         ref={textareaRef}
         value={content}
         onChange={(e) => onContentChange(e.target.value)}
-        className={`w-full bg-transparent text-sm outline-none resize-none leading-relaxed overflow-hidden italic min-w-0 ${
-          dark ? 'text-violet-200/80' : 'text-violet-700/80'
-        }`}
+        className="w-full bg-transparent text-sm outline-none resize-none leading-relaxed overflow-hidden italic min-w-0 text-text-visual"
         style={{ fontFamily: "'SN Pro', sans-serif", fontWeight: 300 }}
         placeholder={showPlaceholder ? 'Describe the visual...' : undefined}
       />

@@ -1,4 +1,4 @@
-import { useState, useCallback, createContext, useContext } from 'react';
+import { useState, useCallback, useEffect, createContext, useContext } from 'react';
 
 export interface Settings {
   theme: 'light' | 'dark';
@@ -58,6 +58,11 @@ export function useSettingsProvider(): SettingsContext {
   const setZoom = useCallback((zoom: number) => {
     save({ ...settings, zoom: Math.max(0, Math.min(1, zoom)) });
   }, [settings, save]);
+
+  // Sync dark class on <html> for CSS custom properties + Tailwind dark: variant
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', settings.theme === 'dark');
+  }, [settings.theme]);
 
   return { settings, toggleTheme, toggleInfoMode, setZoom };
 }

@@ -45,7 +45,6 @@ export function Header({
   const menuRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const overflow = currentDuration > totalDuration;
-  const dark = settings.theme === 'dark';
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -101,16 +100,12 @@ export function Header({
   const sortedFiles = [...files].sort((a, b) => b.updatedAt - a.updatedAt);
 
   return (
-    <header className={`flex items-center gap-4 border-b px-6 py-3 ${
-      dark
-        ? 'border-slate-700 bg-slate-900'
-        : 'border-slate-200 bg-white'
-    }`}>
-      <h1 className="text-lg font-semibold text-pink-400 tracking-tight">
+    <header className="flex items-center gap-4 border-b border-stroke-strong px-6 py-3 bg-surface-alt">
+      <h1 className="text-lg font-semibold text-brand tracking-tight">
         BubbleBeats
       </h1>
 
-      <div className={`mx-2 h-6 w-px ${dark ? 'bg-slate-700' : 'bg-slate-200'}`} />
+      <div className="mx-2 h-6 w-px bg-stroke-subtle" />
 
       <input
         type="text"
@@ -122,11 +117,7 @@ export function Header({
             (e.target as HTMLInputElement).blur();
           }
         }}
-        className={`bg-transparent text-sm font-medium outline-none border-b border-transparent px-1 py-0.5 min-w-48 ${
-          dark
-            ? 'text-slate-200 focus:border-slate-500'
-            : 'text-slate-700 focus:border-slate-400'
-        }`}
+        className="bg-transparent text-sm font-medium outline-none border-b border-transparent px-1 py-0.5 min-w-48 text-text-primary focus:border-accent"
         placeholder="Script title..."
       />
 
@@ -134,7 +125,7 @@ export function Header({
 
       {/* Zoom slider */}
       <div className="flex items-center gap-2">
-        <span className={`text-[10px] ${dark ? 'text-slate-500' : 'text-slate-400'}`}>100%</span>
+        <span className="text-[10px] text-text-muted">100%</span>
         <input
           type="range"
           min={0}
@@ -142,33 +133,29 @@ export function Header({
           step={0.01}
           value={settings.zoom}
           onChange={(e) => setZoom(Number(e.target.value))}
-          className="w-20 h-1 accent-violet-500"
+          className="w-20 h-1 accent-accent"
         />
-        <span className={`text-[10px] ${dark ? 'text-slate-500' : 'text-slate-400'}`}>Fit</span>
+        <span className="text-[10px] text-text-muted">Fit</span>
       </div>
 
-      <div className={`mx-1 h-6 w-px ${dark ? 'bg-slate-700' : 'bg-slate-200'}`} />
+      <div className="mx-1 h-6 w-px bg-stroke-subtle" />
 
       {/* Duration */}
       <div className="flex items-center gap-2 text-sm">
-        <Clock size={14} className={dark ? 'text-slate-400' : 'text-slate-500'} />
-        <span className={overflow ? 'text-red-500 font-medium' : dark ? 'text-slate-300' : 'text-slate-600'}>
+        <Clock size={14} className="text-text-secondary" />
+        <span className={overflow ? 'text-danger font-medium' : 'text-text-primary'}>
           {formatTime(currentDuration)}
         </span>
-        <span className={dark ? 'text-slate-500' : 'text-slate-400'}>/</span>
+        <span className="text-text-muted">/</span>
         <input
           type="number"
           value={totalDuration}
           onChange={(e) => onDurationChange(Math.max(1, Number(e.target.value)))}
-          className={`w-16 text-sm rounded px-2 py-0.5 border outline-none ${
-            dark
-              ? 'bg-slate-800 text-slate-300 border-slate-600 focus:border-violet-500'
-              : 'bg-slate-50 text-slate-700 border-slate-300 focus:border-violet-500'
-          }`}
+          className="w-16 text-sm rounded px-2 py-0.5 border outline-none bg-surface-sunken text-text-primary border-stroke focus:border-accent"
           min={1}
           step={10}
         />
-        <span className={`text-xs ${dark ? 'text-slate-500' : 'text-slate-400'}`}>sec</span>
+        <span className="text-xs text-text-muted">sec</span>
       </div>
 
       <input
@@ -183,26 +170,16 @@ export function Header({
       <div className="relative" ref={menuRef}>
         <button
           onClick={() => setMenuOpen(!menuOpen)}
-          className={`p-2 rounded-lg transition-colors ${
-            dark
-              ? 'hover:bg-slate-800 text-slate-400'
-              : 'hover:bg-slate-100 text-slate-500'
-          }`}
+          className="p-2 rounded-lg transition-colors hover:bg-surface-hover text-text-secondary"
         >
           <Menu size={18} />
         </button>
 
         {menuOpen && (
-          <div className={`absolute right-0 top-full mt-1 w-56 rounded-xl border shadow-lg z-50 py-1 ${
-            dark
-              ? 'bg-slate-800 border-slate-700'
-              : 'bg-white border-slate-200'
-          }`}>
+          <div className="absolute right-0 top-full mt-1 w-56 rounded-xl border border-stroke-strong shadow-lg z-50 py-1 bg-surface-overlay">
             {/* New script */}
             <button
-              className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
-                dark ? 'text-slate-300 hover:bg-slate-700' : 'text-slate-700 hover:bg-slate-50'
-              }`}
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors text-text-primary hover:bg-surface-hover"
               onClick={() => { onNewScript(); setMenuOpen(false); }}
             >
               <FilePlus size={15} />
@@ -212,7 +189,7 @@ export function Header({
             {/* Saved scripts list */}
             {sortedFiles.length > 0 && (
               <>
-                <div className={`my-1 h-px ${dark ? 'bg-slate-700' : 'bg-slate-100'}`} />
+                <div className="my-1 h-px bg-stroke-subtle" />
                 <div className="max-h-48 overflow-y-auto">
                   {sortedFiles.map((file) => {
                     const isActive = file.id === currentFileId;
@@ -221,17 +198,15 @@ export function Header({
                         key={file.id}
                         className={`group flex items-center gap-2 px-4 py-2 text-sm transition-colors cursor-pointer ${
                           isActive
-                            ? dark ? 'bg-violet-900/30 text-violet-400' : 'bg-violet-50 text-violet-600'
-                            : dark ? 'text-slate-300 hover:bg-slate-700' : 'text-slate-700 hover:bg-slate-50'
+                            ? 'bg-surface-active text-accent-soft'
+                            : 'text-text-primary hover:bg-surface-hover'
                         }`}
                         onClick={() => { if (!isActive) { onSwitchFile(file.id); setMenuOpen(false); } }}
                       >
                         <span className="truncate flex-1">{file.title || 'Untitled'}</span>
                         {!isActive && (
                           <button
-                            className={`opacity-0 group-hover:opacity-100 p-0.5 rounded transition-opacity ${
-                              dark ? 'text-slate-500 hover:text-red-400' : 'text-slate-400 hover:text-red-500'
-                            }`}
+                            className="opacity-0 group-hover:opacity-100 p-0.5 rounded transition-opacity text-text-muted hover:text-danger"
                             onClick={(e) => { e.stopPropagation(); onDeleteFile(file.id); }}
                           >
                             <Trash2 size={13} />
@@ -244,12 +219,10 @@ export function Header({
               </>
             )}
 
-            <div className={`my-1 h-px ${dark ? 'bg-slate-700' : 'bg-slate-100'}`} />
+            <div className="my-1 h-px bg-stroke-subtle" />
 
             <button
-              className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
-                dark ? 'text-slate-300 hover:bg-slate-700' : 'text-slate-700 hover:bg-slate-50'
-              }`}
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors text-text-primary hover:bg-surface-hover"
               onClick={handleImport}
             >
               <FileUp size={15} />
@@ -259,28 +232,22 @@ export function Header({
             {/* Export submenu */}
             <div className="relative">
               <button
-                className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
-                  dark ? 'text-slate-300 hover:bg-slate-700' : 'text-slate-700 hover:bg-slate-50'
-                }`}
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors text-text-primary hover:bg-surface-hover"
                 onClick={() => setExportMenuOpen(!exportMenuOpen)}
               >
                 <FileDown size={15} />
                 Export...
               </button>
               {exportMenuOpen && (
-                <div className={`ml-4 border-l pl-2 ${dark ? 'border-slate-700' : 'border-slate-200'}`}>
+                <div className="ml-4 border-l border-stroke-strong pl-2">
                   <button
-                    className={`w-full text-left px-3 py-2 text-sm transition-colors rounded ${
-                      dark ? 'text-slate-300 hover:bg-slate-700' : 'text-slate-700 hover:bg-slate-50'
-                    }`}
+                    className="w-full text-left px-3 py-2 text-sm transition-colors rounded text-text-primary hover:bg-surface-hover"
                     onClick={handleExportMarkdown}
                   >
                     Markdown (.md)
                   </button>
                   <button
-                    className={`w-full text-left px-3 py-2 text-sm transition-colors rounded ${
-                      dark ? 'text-slate-300 hover:bg-slate-700' : 'text-slate-700 hover:bg-slate-50'
-                    }`}
+                    className="w-full text-left px-3 py-2 text-sm transition-colors rounded text-text-primary hover:bg-surface-hover"
                     onClick={handleExportJson}
                   >
                     JSON (.json)
@@ -289,38 +256,32 @@ export function Header({
               )}
             </div>
 
-            <div className={`my-1 h-px ${dark ? 'bg-slate-700' : 'bg-slate-100'}`} />
+            <div className="my-1 h-px bg-stroke-subtle" />
 
             <button
-              className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
-                dark ? 'text-slate-300 hover:bg-slate-700' : 'text-slate-700 hover:bg-slate-50'
-              }`}
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors text-text-primary hover:bg-surface-hover"
               onClick={() => { toggleTheme(); }}
             >
-              {dark ? <Sun size={15} /> : <Moon size={15} />}
-              {dark ? 'Light mode' : 'Dark mode'}
+              {settings.theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
+              {settings.theme === 'dark' ? 'Light mode' : 'Dark mode'}
             </button>
             <button
-              className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
-                dark ? 'text-slate-300 hover:bg-slate-700' : 'text-slate-700 hover:bg-slate-50'
-              }`}
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors text-text-primary hover:bg-surface-hover"
               onClick={() => { toggleInfoMode(); }}
             >
               {settings.infoMode ? <EyeOff size={15} /> : <Info size={15} />}
               {settings.infoMode ? 'Hide info' : 'Info mode'}
             </button>
 
-            <div className={`my-1 h-px ${dark ? 'bg-slate-700' : 'bg-slate-100'}`} />
+            <div className="my-1 h-px bg-stroke-subtle" />
 
             {/* User info + sign out */}
-            <div className={`px-4 py-2 text-xs flex items-center gap-2 ${dark ? 'text-slate-500' : 'text-slate-400'}`}>
+            <div className="px-4 py-2 text-xs flex items-center gap-2 text-text-muted">
               <User size={13} />
               <span className="truncate">{userName}</span>
             </div>
             <button
-              className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
-                dark ? 'text-slate-300 hover:bg-slate-700' : 'text-slate-700 hover:bg-slate-50'
-              }`}
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors text-text-primary hover:bg-surface-hover"
               onClick={() => { signOut(); setMenuOpen(false); }}
             >
               <LogOut size={15} />
