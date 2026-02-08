@@ -72,6 +72,7 @@ export function TextBubble({
 
   const handleDoubleClick = useCallback(
     (e: React.MouseEvent) => {
+      if (e.ctrlKey) return; // Ctrl+click is for splitting, not editing
       if (!isFiller) {
         e.stopPropagation();
         onEnterEdit();
