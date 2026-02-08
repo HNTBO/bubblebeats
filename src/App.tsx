@@ -9,6 +9,8 @@ import { StorageContext, useStorageProvider, useStorage } from './hooks/useStora
 import { MigrationBanner } from './components/MigrationBanner';
 import type { Script } from './types/script';
 
+const MAX_SCRIPTS = 5;
+
 /** Check if a script has any real content worth saving */
 function isScriptEmpty(s: Script): boolean {
   return s.pairs.every(
@@ -125,6 +127,7 @@ function AppContent() {
   }, [storage, setScript]);
 
   const handleNewScript = useCallback(() => {
+    if (storage.files.length >= MAX_SCRIPTS) return;
     // Save current file first (skip if empty)
     if (storage.currentFileId && !storage.currentFileId.startsWith('pending-') && !isScriptEmpty(scriptRef.current)) {
       storage.saveFile(storage.currentFileId, scriptRef.current);
@@ -156,6 +159,7 @@ function AppContent() {
   }, [storage, setScript]);
 
   const handleImport = useCallback((imported: Script) => {
+    if (storage.files.length >= MAX_SCRIPTS) return;
     // Save current file first (skip if empty)
     if (storage.currentFileId && !storage.currentFileId.startsWith('pending-') && !isScriptEmpty(scriptRef.current)) {
       storage.saveFile(storage.currentFileId, scriptRef.current);

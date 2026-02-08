@@ -1,11 +1,13 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Menu, FileDown, FileUp, Moon, Sun, Info, EyeOff, FilePlus, Trash2, LogOut, User } from 'lucide-react';
+import { Menu, FileDown, FileUp, Moon, Sun, Info, EyeOff, Plus, Trash2, LogOut, User } from 'lucide-react';
 import { useClerk } from '@clerk/clerk-react';
 import { useSettings } from '../hooks/useSettings';
 import { parseScriptMarkdown } from '../utils/parseMarkdown';
 import { exportToMarkdown, exportToJson, downloadFile } from '../utils/exportMarkdown';
 import { Logo } from './Logo';
 import type { Script, FileEntry } from '../types/script';
+
+const MAX_SCRIPTS = 5;
 
 interface HeaderProps {
   title: string;
@@ -147,56 +149,58 @@ export function Header({
 
           {menuOpen && (
             <div className="absolute right-0 top-full mt-1 w-56 rounded-xl border border-stroke-strong shadow-lg z-50 py-1 bg-surface-overlay">
-              {/* New script */}
-              <button
-                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors text-text-primary hover:bg-surface-hover"
-                onClick={() => { onNewScript(); setMenuOpen(false); }}
-              >
-                <FilePlus size={15} />
-                New script
-              </button>
-
-              {/* Saved scripts list */}
-              {sortedFiles.length > 0 && (
-                <>
-                  <div className="my-1 h-px bg-stroke-subtle" />
-                  <div className="max-h-48 overflow-y-auto">
-                    {sortedFiles.map((file) => {
-                      const isActive = file.id === currentFileId;
-                      return (
-                        <div
-                          key={file.id}
-                          className={`group flex items-center gap-2 px-4 py-2 text-sm transition-colors cursor-pointer ${
-                            isActive
-                              ? 'bg-surface-active text-accent-soft'
-                              : 'text-text-primary hover:bg-surface-hover'
-                          }`}
-                          onClick={() => { if (!isActive) { onSwitchFile(file.id); setMenuOpen(false); } }}
+              {/* Script slots */}
+              <div className="my-1 h-px bg-stroke-subtle" />
+              {Array.from({ length: Math.max(sortedFiles.length, MAX_SCRIPTS) }).map((_, i) => {
+                const file = sortedFiles[i];
+                if (file) {
+                  const isActive = file.id === currentFileId;
+                  return (
+                    <div
+                      key={file.id}
+                      className={`group flex items-center gap-2 px-4 py-2 text-sm cursor-pointer ${
+                        isActive
+                          ? 'bg-surface-active text-accent-soft'
+                          : 'text-text-primary hover:bg-surface-hover'
+                      }`}
+                      onClick={() => { if (!isActive) { onSwitchFile(file.id); setMenuOpen(false); } }}
+                    >
+                      <span className="truncate flex-1">{file.title || 'Untitled'}</span>
+                      {!isActive && (
+                        <button
+                          className="opacity-0 group-hover:opacity-100 p-0.5 rounded transition-opacity text-text-muted hover:text-danger"
+                          onClick={(e) => { e.stopPropagation(); onDeleteFile(file.id); }}
                         >
-                          <span className="truncate flex-1">{file.title || 'Untitled'}</span>
-                          {!isActive && (
-                            <button
-                              className="opacity-0 group-hover:opacity-100 p-0.5 rounded transition-opacity text-text-muted hover:text-danger"
-                              onClick={(e) => { e.stopPropagation(); onDeleteFile(file.id); }}
-                            >
-                              <Trash2 size={13} />
-                            </button>
-                          )}
-                        </div>
-                      );
-                    })}
+                          <Trash2 size={13} />
+                        </button>
+                      )}
+                    </div>
+                  );
+                }
+                return (
+                  <div key={`empty-${i}`} className="group flex items-center gap-2 px-4 py-2 text-sm text-text-muted">
+                    <span className="flex-1">Empty</span>
+                    <button
+                      className="opacity-0 group-hover:opacity-100 p-0.5 rounded transition-opacity text-text-muted hover:text-text-secondary"
+                      onClick={() => { onNewScript(); setMenuOpen(false); }}
+                    >
+                      <Plus size={13} />
+                    </button>
                   </div>
-                </>
-              )}
-
+                );
+              })}
               <div className="my-1 h-px bg-stroke-subtle" />
 
               <button
-                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors text-text-primary hover:bg-surface-hover"
-                onClick={handleImport}
+                className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
+                  files.length >= MAX_SCRIPTS
+                    ? 'text-text-muted cursor-not-allowed'
+                    : 'text-text-primary hover:bg-surface-hover'
+                }`}
+                onClick={files.length >= MAX_SCRIPTS ? undefined : handleImport}
               >
                 <FileUp size={15} />
-                Import script...
+                {files.length >= MAX_SCRIPTS ? 'Clear a slot to import' : 'Import script...'}
               </button>
 
               {/* Export submenu */}
