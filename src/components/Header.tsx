@@ -106,7 +106,7 @@ export function Header({
         ? 'border-slate-700 bg-slate-900'
         : 'border-slate-200 bg-white'
     }`}>
-      <h1 className="text-lg font-semibold text-sky-500 tracking-tight">
+      <h1 className="text-lg font-semibold text-violet-400 tracking-tight">
         BubbleBeats
       </h1>
 
@@ -142,7 +142,7 @@ export function Header({
           step={0.01}
           value={settings.zoom}
           onChange={(e) => setZoom(Number(e.target.value))}
-          className="w-20 h-1 accent-sky-500"
+          className="w-20 h-1 accent-violet-500"
         />
         <span className={`text-[10px] ${dark ? 'text-slate-500' : 'text-slate-400'}`}>Fit</span>
       </div>
@@ -162,8 +162,8 @@ export function Header({
           onChange={(e) => onDurationChange(Math.max(1, Number(e.target.value)))}
           className={`w-16 text-sm rounded px-2 py-0.5 border outline-none ${
             dark
-              ? 'bg-slate-800 text-slate-300 border-slate-600 focus:border-sky-500'
-              : 'bg-slate-50 text-slate-700 border-slate-300 focus:border-sky-500'
+              ? 'bg-slate-800 text-slate-300 border-slate-600 focus:border-violet-500'
+              : 'bg-slate-50 text-slate-700 border-slate-300 focus:border-violet-500'
           }`}
           min={1}
           step={10}
@@ -221,7 +221,7 @@ export function Header({
                         key={file.id}
                         className={`group flex items-center gap-2 px-4 py-2 text-sm transition-colors cursor-pointer ${
                           isActive
-                            ? dark ? 'bg-sky-900/30 text-sky-400' : 'bg-sky-50 text-sky-600'
+                            ? dark ? 'bg-violet-900/30 text-violet-400' : 'bg-violet-50 text-violet-600'
                             : dark ? 'text-slate-300 hover:bg-slate-700' : 'text-slate-700 hover:bg-slate-50'
                         }`}
                         onClick={() => { if (!isActive) { onSwitchFile(file.id); setMenuOpen(false); } }}

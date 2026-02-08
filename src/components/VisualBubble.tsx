@@ -168,6 +168,7 @@ export function VisualBubble({
         className={`w-full bg-transparent text-sm outline-none resize-none leading-relaxed overflow-hidden italic min-w-0 ${
           dark ? 'text-emerald-300/80' : 'text-emerald-700/80'
         }`}
+        style={{ fontFamily: "'SN Pro', sans-serif", fontWeight: 300 }}
         placeholder={showPlaceholder ? 'Describe the visual...' : undefined}
       />
 

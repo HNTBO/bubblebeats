@@ -169,7 +169,7 @@ export function TextBubble({
           pause {durationSeconds.toFixed(1)}s
         </span>
         {settings.infoMode && (
-          <span className={`absolute top-2 left-3 text-[9px] font-mono ${dark ? 'text-slate-600' : 'text-slate-400'}`}>
+          <span className={`absolute top-2 left-3 text-[9px] font-mono ${dark ? 'text-rose-400/40' : 'text-slate-400'}`}>
             {formatTime(cumulativeTime)}
           </span>
         )}
@@ -202,14 +202,14 @@ export function TextBubble({
       className={`relative group rounded-3xl border px-4 pb-4 ${settings.infoMode ? 'pt-7' : 'pt-4'} flex flex-col h-full transition-colors ${
         isEditing
           ? dark
-            ? 'border-sky-500/60 bg-slate-800/50 shadow-[inset_0_0_12px_rgba(56,189,248,0.15)]'
-            : 'border-sky-400 bg-white shadow-[inset_0_0_12px_rgba(56,189,248,0.12)]'
+            ? 'border-violet-500/60 bg-slate-800/50 shadow-[inset_0_0_12px_rgba(139,92,246,0.15)]'
+            : 'border-violet-400 bg-white shadow-[inset_0_0_12px_rgba(139,92,246,0.12)]'
           : overBudget
             ? dark
               ? 'border-red-500/60 bg-red-950/20 shadow-[0_0_8px_rgba(239,68,68,0.15)]'
               : 'border-red-300 bg-red-50 shadow-[0_0_8px_rgba(239,68,68,0.1)]'
             : dark
-              ? 'border-slate-600 bg-slate-800/50'
+              ? 'border-slate-600/60 bg-slate-800/50'
               : 'border-slate-200 bg-white'
       }`}
       style={isEditing && editHeight > 0 ? { minHeight: editHeight } : undefined}
@@ -218,7 +218,7 @@ export function TextBubble({
     >
       {/* TC-IN — top left */}
       {settings.infoMode && (
-        <span className={`absolute top-2 left-3 text-[9px] font-mono ${dark ? 'text-slate-600' : 'text-slate-400'}`}>
+        <span className={`absolute top-2 left-3 text-[9px] font-mono ${dark ? 'text-rose-400/40' : 'text-slate-400'}`}>
           {formatTime(cumulativeTime)}
         </span>
       )}
@@ -255,6 +255,7 @@ export function TextBubble({
         className={`w-full bg-transparent text-sm outline-none resize-none leading-relaxed overflow-hidden ${
           dark ? 'text-slate-200' : 'text-slate-700'
         } ${!isEditing ? 'cursor-default pointer-events-none' : ''}`}
+        style={{ fontFamily: "'SN Pro', sans-serif", fontWeight: 300 }}
         placeholder="Type your voiceover text..."
         tabIndex={isEditing ? 0 : -1}
       />

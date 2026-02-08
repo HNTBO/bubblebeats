@@ -14,9 +14,9 @@ interface SettingsContext {
 }
 
 const defaultSettings: Settings = {
-  theme: 'light',
+  theme: 'dark',
   infoMode: true,
-  zoom: 0,
+  zoom: 0.25,
 };
 
 export const SettingsContext = createContext<SettingsContext>({

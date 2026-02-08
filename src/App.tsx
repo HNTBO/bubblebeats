@@ -177,7 +177,7 @@ function AppContent() {
     return (
       <div className={`flex items-center justify-center h-screen ${dark ? 'bg-slate-950 text-slate-400' : 'bg-slate-50 text-slate-500'}`}>
         <div className="text-center">
-          <div className="animate-spin w-8 h-8 border-2 border-sky-500 border-t-transparent rounded-full mx-auto mb-3" />
+          <div className="animate-spin w-8 h-8 border-2 border-violet-500 border-t-transparent rounded-full mx-auto mb-3" />
           <p className="text-sm">Loading scripts...</p>
         </div>
       </div>
@@ -233,7 +233,7 @@ function LoginScreen() {
   return (
     <div className="flex items-center justify-center h-screen bg-slate-950">
       <div className="text-center">
-        <h1 className="text-3xl font-bold text-sky-500 mb-2 tracking-tight">BubbleBeats</h1>
+        <h1 className="text-3xl font-bold text-violet-400 mb-2 tracking-tight">BubbleBeats</h1>
         <p className="text-slate-400 text-sm mb-8">Visual script timing editor</p>
         <SignIn routing="hash" />
       </div>
@@ -244,7 +244,7 @@ function LoginScreen() {
 function LoadingScreen() {
   return (
     <div className="flex items-center justify-center h-screen bg-slate-950">
-      <div className="animate-spin w-8 h-8 border-2 border-sky-500 border-t-transparent rounded-full" />
+      <div className="animate-spin w-8 h-8 border-2 border-violet-500 border-t-transparent rounded-full" />
     </div>
   );
 }
