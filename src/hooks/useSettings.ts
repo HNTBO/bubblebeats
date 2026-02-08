@@ -64,6 +64,18 @@ export function useSettingsProvider(): SettingsContext {
     document.documentElement.classList.toggle('dark', settings.theme === 'dark');
   }, [settings.theme]);
 
+  // Shift+Alt+D to toggle dark/light mode
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.shiftKey && e.altKey && e.key === 'D') {
+        e.preventDefault();
+        toggleTheme();
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [toggleTheme]);
+
   return { settings, toggleTheme, toggleInfoMode, setZoom };
 }
 

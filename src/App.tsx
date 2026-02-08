@@ -217,7 +217,7 @@ function AppContent() {
         onSplitVisualSpan={splitVisualSpan}
       />
       <footer className="border-t border-stroke-subtle px-6 py-1.5 text-[10px] flex justify-between text-text-info">
-        <span>Double-click text to edit | Ctrl+Click to split | Click + to add pause | Drag pause edge to resize | Hover X to pop/merge</span>
+        <span>Double-click text to edit | Ctrl+Click to split | Click + to add pause | Drag pause edge to resize | Use the needle to pop/merge</span>
         <span>{script.pairs.length} segments</span>
       </footer>
     </div>
