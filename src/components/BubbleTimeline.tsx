@@ -284,15 +284,24 @@ export function BubbleTimeline({
               transformOrigin: 'top center',
             }}
           >
-            {/* Column headers with timing centered between them */}
-            <div className="px-4 pt-3 pb-2">
-              <div className="flex items-end" style={{ gap: GAP_PX }}>
-                <div className="flex-1 text-center pb-0.5">
+            {/* Column headers + timing indicator */}
+            <div className="relative px-4 pt-3 pb-2">
+              {/* VOICE / VISUAL — grid matching bubble columns */}
+              <div className="grid grid-cols-2 items-end" style={{ gap: GAP_PX }}>
+                <div className="text-center">
                   <span className="text-xs font-medium uppercase tracking-wider text-text-secondary">
                     Voice
                   </span>
                 </div>
-                <div className="flex items-center gap-1.5 text-sm shrink-0 pb-0.5">
+                <div className="text-center">
+                  <span className="text-xs font-medium uppercase tracking-wider text-text-secondary">
+                    Visual
+                  </span>
+                </div>
+              </div>
+              {/* Timing — absolutely centered between the two columns */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="flex items-center gap-1.5 text-sm pointer-events-auto">
                   <Clock size={13} className="text-text-secondary" />
                   <span className={overBudget ? 'text-danger font-medium' : 'text-text-primary'}>
                     {formatTime(currentDuration)}
@@ -307,11 +316,6 @@ export function BubbleTimeline({
                     step={10}
                   />
                   <span className="text-xs text-text-muted">sec</span>
-                </div>
-                <div className="flex-1 text-center pb-0.5">
-                  <span className="text-xs font-medium uppercase tracking-wider text-text-secondary">
-                    Visual
-                  </span>
                 </div>
               </div>
             </div>
