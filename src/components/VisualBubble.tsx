@@ -3,6 +3,7 @@ import { useMutation, useQuery } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import { X, ImagePlus } from 'lucide-react';
 import { PopOverlay } from './PopOverlay';
+import { NeedleIcon } from './NeedleIcon';
 
 interface VisualBubbleProps {
   content: string;
@@ -93,13 +94,15 @@ export function VisualBubble({
       onDragLeave={() => { dragCounter.current--; if (dragCounter.current <= 0) { dragCounter.current = 0; setDragging(false); } }}
       onDrop={(e) => { dragCounter.current = 0; handleDrop(e); }}
     >
-      {/* Pop icon — top right, on hover */}
-      <button
-        className="absolute top-2 right-3 opacity-0 group-hover:opacity-100 transition-opacity z-10 text-accent hover:text-accent-soft"
-        onClick={(e) => { e.stopPropagation(); setShowPop(true); }}
-      >
-        <X size={14} />
-      </button>
+      {/* Needle — top right corner, hover zone */}
+      <div className="absolute -top-3 -right-3 w-10 h-10 z-20 group/needle">
+        <button
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover/needle:opacity-100 transition-opacity text-accent hover:text-accent-soft"
+          onClick={(e) => { e.stopPropagation(); setShowPop(true); }}
+        >
+          <NeedleIcon size={14} />
+        </button>
+      </div>
 
       {/* Pop Overlay */}
       {showPop && (

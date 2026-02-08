@@ -1,5 +1,5 @@
-@import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=SN+Pro:wght@300;400;500&display=swap');
+@import "tailwindcss";
 
 /* ── Light-mode tokens (default) ── */
 :root {
@@ -49,7 +49,7 @@
   --color-surface-raised: rgba(30,41,59,0.5);
   --color-surface-sunken: rgba(30,41,59,0.3);
   --color-surface-overlay: #1e293b;
-  --color-surface-visual: rgba(76,29,149,0.25);
+  --color-surface-visual: rgba(96, 65, 142, 0.25);
   --color-surface-hover: #334155;
   --color-surface-active: rgba(76,29,149,0.3);
   --color-surface-error: rgba(69,10,10,0.2);
@@ -59,7 +59,7 @@
   --color-stroke-strong: #334155;
   --color-stroke-subtle: #334155;
   --color-stroke-filler: #475569;
-  --color-stroke-visual: rgba(139,92,246,0.3);
+  --color-stroke-visual: rgba(160, 122, 247, 0.411);
   --color-stroke-editing: rgba(139,92,246,0.6);
   --color-stroke-error: rgba(239,68,68,0.6);
 

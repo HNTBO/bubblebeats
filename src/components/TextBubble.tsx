@@ -1,8 +1,8 @@
 import { useRef, useCallback, useLayoutEffect, useState } from 'react';
 import { formatTime, countWords, estimateDuration } from '../utils/timing';
 import { useSettings } from '../hooks/useSettings';
-import { X } from 'lucide-react';
 import { PopOverlay } from './PopOverlay';
+import { NeedleIcon } from './NeedleIcon';
 
 interface TextBubbleProps {
   content: string;
@@ -174,13 +174,15 @@ export function TextBubble({
             {formatTime(cumulativeTime)}
           </span>
         )}
-        {/* Pop icon — top right, on hover */}
-        <button
-          className="absolute top-2 right-3 opacity-0 group-hover:opacity-100 transition-opacity text-text-secondary hover:text-text-primary"
-          onClick={handlePopClick}
-        >
-          <X size={14} />
-        </button>
+        {/* Needle — top right corner, hover zone */}
+        <div className="absolute -top-3 -right-3 w-10 h-10 z-20 group/needle">
+          <button
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover/needle:opacity-100 transition-opacity text-text-secondary hover:text-text-primary"
+            onClick={handlePopClick}
+          >
+            <NeedleIcon size={14} />
+          </button>
+        </div>
         {/* Resize handle — fillers only */}
         <div
           className="absolute bottom-0 left-4 right-4 h-3 cursor-ns-resize opacity-0 group-hover:opacity-100 transition-opacity z-10"
@@ -218,14 +220,16 @@ export function TextBubble({
         </span>
       )}
 
-      {/* Pop icon — top right, on hover, hidden during edit */}
+      {/* Needle — top right corner, hover zone, hidden during edit */}
       {!isEditing && (
-        <button
-          className="absolute top-2 right-3 opacity-0 group-hover:opacity-100 transition-opacity z-10 text-text-secondary hover:text-text-primary"
-          onClick={handlePopClick}
-        >
-          <X size={14} />
-        </button>
+        <div className="absolute -top-3 -right-3 w-10 h-10 z-20 group/needle">
+          <button
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover/needle:opacity-100 transition-opacity text-text-secondary hover:text-text-primary"
+            onClick={handlePopClick}
+          >
+            <NeedleIcon size={14} />
+          </button>
+        </div>
       )}
 
       {/* Pop Overlay */}
