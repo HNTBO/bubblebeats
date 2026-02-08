@@ -280,12 +280,12 @@ export function BubbleTimeline({
           >
             {/* Column headers */}
             <div className="grid grid-cols-2 px-4 py-2" style={{ gap: GAP_PX }}>
-              <div className={`text-center ${dark ? 'bg-slate-950' : 'bg-slate-50'}`}>
+              <div className={`text-center ${dark ? 'bg-slate-950' : 'bg-slate-100'}`}>
                 <span className={`text-xs font-medium uppercase tracking-wider ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
                   Voice
                 </span>
               </div>
-              <div className={`text-center ${dark ? 'bg-slate-950' : 'bg-slate-50'}`}>
+              <div className={`text-center ${dark ? 'bg-slate-950' : 'bg-slate-100'}`}>
                 <span className={`text-xs font-medium uppercase tracking-wider ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
                   Visual
                 </span>

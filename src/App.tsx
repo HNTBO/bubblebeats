@@ -175,7 +175,7 @@ function AppContent() {
 
   if (storage.isLoading) {
     return (
-      <div className={`flex items-center justify-center h-screen ${dark ? 'bg-slate-950 text-slate-400' : 'bg-slate-50 text-slate-500'}`}>
+      <div className={`flex items-center justify-center h-screen ${dark ? 'bg-slate-950 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>
         <div className="text-center">
           <div className="animate-spin w-8 h-8 border-2 border-violet-500 border-t-transparent rounded-full mx-auto mb-3" />
           <p className="text-sm">Loading scripts...</p>
@@ -185,7 +185,7 @@ function AppContent() {
   }
 
   return (
-    <div className={`flex flex-col h-screen ${dark ? 'bg-slate-950 text-slate-200' : 'bg-slate-50 text-slate-800'}`}>
+    <div className={`flex flex-col h-screen ${dark ? 'bg-slate-950 text-slate-200' : 'bg-slate-100 text-slate-800'}`}>
       <MigrationBanner />
       <Header
         title={script.title}

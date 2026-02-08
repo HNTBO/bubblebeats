@@ -92,9 +92,9 @@ export function VisualBubble({
     <div
       className={`relative group rounded-3xl border p-4 h-full flex gap-3 ${
         dark
-          ? 'border-violet-800/30 bg-violet-950/15'
+          ? 'border-violet-500/30 bg-violet-900/25'
           : 'border-violet-200 bg-violet-50/50'
-      } ${dragging ? (dark ? 'ring-2 ring-violet-500/50' : 'ring-2 ring-violet-300') : ''}`}
+      } ${dragging ? (dark ? 'ring-2 ring-violet-400/50' : 'ring-2 ring-violet-300') : ''}`}
       onDragEnter={(e) => { e.preventDefault(); dragCounter.current++; setDragging(true); }}
       onDragOver={(e) => { e.preventDefault(); }}
       onDragLeave={() => { dragCounter.current--; if (dragCounter.current <= 0) { dragCounter.current = 0; setDragging(false); } }}
@@ -102,7 +102,7 @@ export function VisualBubble({
     >
       {/* Pop icon — top right, on hover */}
       <button
-        className={`absolute top-2 right-3 opacity-0 group-hover:opacity-100 transition-opacity z-10 ${dark ? 'text-violet-600 hover:text-violet-300' : 'text-violet-400 hover:text-violet-600'}`}
+        className={`absolute top-2 right-3 opacity-0 group-hover:opacity-100 transition-opacity z-10 ${dark ? 'text-violet-400 hover:text-violet-200' : 'text-violet-400 hover:text-violet-600'}`}
         onClick={(e) => { e.stopPropagation(); setShowPop(true); }}
       >
         <X size={14} />
@@ -127,7 +127,7 @@ export function VisualBubble({
             src={imageUrl}
             alt=""
             className={`rounded-2xl object-contain cursor-pointer max-h-20 max-w-24 ${
-              dark ? 'ring-1 ring-violet-800/50' : 'ring-1 ring-violet-200'
+              dark ? 'ring-1 ring-violet-500/40' : 'ring-1 ring-violet-200'
             }`}
             onClick={() => setLightbox(true)}
           />
@@ -166,7 +166,7 @@ export function VisualBubble({
         value={content}
         onChange={(e) => onContentChange(e.target.value)}
         className={`w-full bg-transparent text-sm outline-none resize-none leading-relaxed overflow-hidden italic min-w-0 ${
-          dark ? 'text-violet-300/80' : 'text-violet-700/80'
+          dark ? 'text-violet-200/80' : 'text-violet-700/80'
         }`}
         style={{ fontFamily: "'SN Pro', sans-serif", fontWeight: 300 }}
         placeholder={showPlaceholder ? 'Describe the visual...' : undefined}
