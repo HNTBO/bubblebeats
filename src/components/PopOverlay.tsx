@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { ChevronUp, ChevronDown, Trash2, X } from 'lucide-react';
 
 interface PopOverlayProps {
@@ -19,8 +20,36 @@ export function PopOverlay({
   onErase,
   onExit,
 }: PopOverlayProps) {
+  const overlayRef = useRef<HTMLDivElement>(null);
+
+  // Esc to close
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        e.stopPropagation();
+        onExit();
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [onExit]);
+
+  // Click outside to close
+  useEffect(() => {
+    function handleMouseDown(e: MouseEvent) {
+      if (overlayRef.current && !overlayRef.current.contains(e.target as Node)) {
+        onExit();
+      }
+    }
+    document.addEventListener('mousedown', handleMouseDown);
+    return () => document.removeEventListener('mousedown', handleMouseDown);
+  }, [onExit]);
+
   return (
-    <div className="absolute inset-0 rounded-3xl bg-black/60 backdrop-blur-sm z-20 flex items-center justify-center min-h-[140px]">
+    <div
+      ref={overlayRef}
+      className="absolute inset-0 rounded-3xl bg-black/45 backdrop-blur-sm z-20 flex items-center justify-center min-h-[140px]"
+    >
       {/* Top: Merge Up */}
       {canMergeUp && (
         <button
