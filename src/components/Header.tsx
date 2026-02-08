@@ -106,7 +106,7 @@ export function Header({
         ? 'border-slate-700 bg-slate-900'
         : 'border-slate-200 bg-white'
     }`}>
-      <h1 className="text-lg font-semibold text-violet-400 tracking-tight">
+      <h1 className="text-lg font-semibold text-pink-400 tracking-tight">
         BubbleBeats
       </h1>
 

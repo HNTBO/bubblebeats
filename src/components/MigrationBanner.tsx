@@ -79,10 +79,10 @@ export function MigrationBanner() {
 
   if (done) {
     return (
-      <div className={`px-6 py-2 text-sm flex items-center justify-between ${dark ? 'bg-emerald-900/30 text-emerald-300' : 'bg-emerald-50 text-emerald-700'}`}>
+      <div className={`px-6 py-2 text-sm flex items-center justify-between ${dark ? 'bg-violet-900/30 text-violet-300' : 'bg-violet-50 text-violet-700'}`}>
         <span>Imported {legacyScripts.length} script{legacyScripts.length !== 1 ? 's' : ''} from local storage.</span>
         <button
-          className={`text-xs underline ${dark ? 'text-emerald-400' : 'text-emerald-600'}`}
+          className={`text-xs underline ${dark ? 'text-violet-400' : 'text-violet-600'}`}
           onClick={() => setDismissed(true)}
         >
           Dismiss

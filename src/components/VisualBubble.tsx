@@ -92,9 +92,9 @@ export function VisualBubble({
     <div
       className={`relative group rounded-3xl border p-4 h-full flex gap-3 ${
         dark
-          ? 'border-emerald-800/40 bg-emerald-950/20'
-          : 'border-emerald-200 bg-emerald-50/50'
-      } ${dragging ? (dark ? 'ring-2 ring-emerald-500/50' : 'ring-2 ring-emerald-300') : ''}`}
+          ? 'border-violet-800/30 bg-violet-950/15'
+          : 'border-violet-200 bg-violet-50/50'
+      } ${dragging ? (dark ? 'ring-2 ring-violet-500/50' : 'ring-2 ring-violet-300') : ''}`}
       onDragEnter={(e) => { e.preventDefault(); dragCounter.current++; setDragging(true); }}
       onDragOver={(e) => { e.preventDefault(); }}
       onDragLeave={() => { dragCounter.current--; if (dragCounter.current <= 0) { dragCounter.current = 0; setDragging(false); } }}
@@ -102,7 +102,7 @@ export function VisualBubble({
     >
       {/* Pop icon — top right, on hover */}
       <button
-        className={`absolute top-2 right-3 opacity-0 group-hover:opacity-100 transition-opacity z-10 ${dark ? 'text-emerald-600 hover:text-emerald-300' : 'text-emerald-400 hover:text-emerald-600'}`}
+        className={`absolute top-2 right-3 opacity-0 group-hover:opacity-100 transition-opacity z-10 ${dark ? 'text-violet-600 hover:text-violet-300' : 'text-violet-400 hover:text-violet-600'}`}
         onClick={(e) => { e.stopPropagation(); setShowPop(true); }}
       >
         <X size={14} />
@@ -127,7 +127,7 @@ export function VisualBubble({
             src={imageUrl}
             alt=""
             className={`rounded-2xl object-contain cursor-pointer max-h-20 max-w-24 ${
-              dark ? 'ring-1 ring-emerald-800/50' : 'ring-1 ring-emerald-200'
+              dark ? 'ring-1 ring-violet-800/50' : 'ring-1 ring-violet-200'
             }`}
             onClick={() => setLightbox(true)}
           />
@@ -144,7 +144,7 @@ export function VisualBubble({
 
       {/* Upload indicator */}
       {uploading && (
-        <div className={`flex items-center gap-2 shrink-0 self-center text-xs ${dark ? 'text-emerald-400' : 'text-emerald-600'}`}>
+        <div className={`flex items-center gap-2 shrink-0 self-center text-xs ${dark ? 'text-violet-400' : 'text-violet-600'}`}>
           <div className="animate-spin w-3 h-3 border border-current border-t-transparent rounded-full" />
         </div>
       )}
@@ -152,9 +152,9 @@ export function VisualBubble({
       {/* Drop zone hint when dragging */}
       {dragging && (
         <div className={`absolute inset-0 flex items-center justify-center rounded-3xl z-20 pointer-events-none ${
-          dark ? 'bg-emerald-950/80' : 'bg-emerald-50/80'
+          dark ? 'bg-violet-950/80' : 'bg-violet-50/80'
         }`}>
-          <div className={`flex items-center gap-2 text-sm ${dark ? 'text-emerald-300' : 'text-emerald-600'}`}>
+          <div className={`flex items-center gap-2 text-sm ${dark ? 'text-violet-300' : 'text-violet-600'}`}>
             <ImagePlus size={18} />
             Drop image here
           </div>
@@ -166,7 +166,7 @@ export function VisualBubble({
         value={content}
         onChange={(e) => onContentChange(e.target.value)}
         className={`w-full bg-transparent text-sm outline-none resize-none leading-relaxed overflow-hidden italic min-w-0 ${
-          dark ? 'text-emerald-300/80' : 'text-emerald-700/80'
+          dark ? 'text-violet-300/80' : 'text-violet-700/80'
         }`}
         style={{ fontFamily: "'SN Pro', sans-serif", fontWeight: 300 }}
         placeholder={showPlaceholder ? 'Describe the visual...' : undefined}

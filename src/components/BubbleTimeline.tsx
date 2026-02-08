@@ -194,9 +194,9 @@ export function BubbleTimeline({
         >
           <div className="absolute -top-2 -bottom-2 left-0 right-0 flex items-center justify-center z-10">
             <div className={`rounded-full p-0.5 opacity-0 group-hover/vsplit:opacity-100 transition-opacity ${
-              dark ? 'bg-emerald-900 shadow-sm' : 'bg-emerald-50 shadow-sm'
+              dark ? 'bg-violet-900 shadow-sm' : 'bg-violet-50 shadow-sm'
             }`}>
-              <Scissors size={12} className={dark ? 'text-emerald-400' : 'text-emerald-600'} />
+              <Scissors size={12} className={dark ? 'text-violet-400' : 'text-violet-600'} />
             </div>
           </div>
         </div>

@@ -169,7 +169,7 @@ export function TextBubble({
           pause {durationSeconds.toFixed(1)}s
         </span>
         {settings.infoMode && (
-          <span className={`absolute top-2 left-3 text-[9px] font-mono ${dark ? 'text-rose-400/40' : 'text-slate-400'}`}>
+          <span className={`absolute top-2 left-3 text-[9px] font-mono ${dark ? 'text-slate-600' : 'text-slate-400'}`}>
             {formatTime(cumulativeTime)}
           </span>
         )}
@@ -218,7 +218,7 @@ export function TextBubble({
     >
       {/* TC-IN — top left */}
       {settings.infoMode && (
-        <span className={`absolute top-2 left-3 text-[9px] font-mono ${dark ? 'text-rose-400/40' : 'text-slate-400'}`}>
+        <span className={`absolute top-2 left-3 text-[9px] font-mono ${dark ? 'text-slate-600' : 'text-slate-400'}`}>
           {formatTime(cumulativeTime)}
         </span>
       )}
