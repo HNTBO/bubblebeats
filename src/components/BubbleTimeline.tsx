@@ -280,34 +280,31 @@ export function BubbleTimeline({
               transformOrigin: 'top center',
             }}
           >
-            {/* Timing bubble + column headers */}
-            <div className="px-4 pt-3 pb-2 flex flex-col gap-2">
-              {/* Timing indicator — centered between columns */}
-              <div className="flex items-center justify-center gap-2 text-sm">
-                <Clock size={13} className="text-text-secondary" />
-                <span className={overBudget ? 'text-danger font-medium' : 'text-text-primary'}>
-                  {formatTime(currentDuration)}
-                </span>
-                <span className="text-text-muted">/</span>
-                <input
-                  type="number"
-                  value={totalDuration}
-                  onChange={(e) => onDurationChange(Math.max(1, Number(e.target.value)))}
-                  className="w-14 text-sm rounded px-1.5 py-0.5 border outline-none bg-surface-sunken text-text-primary border-stroke focus:border-accent text-center"
-                  min={1}
-                  step={10}
-                />
-                <span className="text-xs text-text-muted">sec</span>
-              </div>
-
-              {/* Column labels */}
-              <div className="grid grid-cols-2" style={{ gap: GAP_PX }}>
-                <div className="text-center">
+            {/* Column headers with timing centered between them */}
+            <div className="px-4 pt-3 pb-2">
+              <div className="flex items-end" style={{ gap: GAP_PX }}>
+                <div className="flex-1 text-center pb-0.5">
                   <span className="text-xs font-medium uppercase tracking-wider text-text-secondary">
                     Voice
                   </span>
                 </div>
-                <div className="text-center">
+                <div className="flex items-center gap-1.5 text-sm shrink-0 pb-0.5">
+                  <Clock size={13} className="text-text-secondary" />
+                  <span className={overBudget ? 'text-danger font-medium' : 'text-text-primary'}>
+                    {formatTime(currentDuration)}
+                  </span>
+                  <span className="text-text-muted">/</span>
+                  <input
+                    type="number"
+                    value={totalDuration}
+                    onChange={(e) => onDurationChange(Math.max(1, Number(e.target.value)))}
+                    className="w-14 text-sm rounded px-1.5 py-0.5 border outline-none bg-surface-sunken text-text-primary border-stroke focus:border-accent text-center"
+                    min={1}
+                    step={10}
+                  />
+                  <span className="text-xs text-text-muted">sec</span>
+                </div>
+                <div className="flex-1 text-center pb-0.5">
                   <span className="text-xs font-medium uppercase tracking-wider text-text-secondary">
                     Visual
                   </span>

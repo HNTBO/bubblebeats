@@ -93,12 +93,12 @@ export function Header({
   const sortedFiles = [...files].sort((a, b) => b.updatedAt - a.updatedAt);
 
   return (
-    <header className="flex items-center border-b border-stroke-strong px-6 py-3 bg-surface-alt">
+    <header className="relative flex items-center border-b border-stroke-strong px-6 py-3 bg-surface-alt">
       {/* Logo — left */}
       <Logo height={18} className="text-text-primary shrink-0" />
 
-      {/* Title — centered with flex */}
-      <div className="flex-1 flex justify-center">
+      {/* Title — absolutely centered on the header */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <input
           type="text"
           value={title}
@@ -109,10 +109,12 @@ export function Header({
               (e.target as HTMLInputElement).blur();
             }
           }}
-          className="bg-transparent text-sm font-medium outline-none border-b border-transparent px-1 py-0.5 text-center min-w-48 text-text-primary focus:border-accent"
+          className="pointer-events-auto bg-transparent text-sm font-medium outline-none border-b border-transparent px-1 py-0.5 text-center min-w-48 text-text-primary focus:border-accent"
           placeholder="Script title..."
         />
       </div>
+
+      <div className="flex-1" />
 
       {/* Right side: zoom slider + hamburger */}
       <div className="flex items-center gap-2 shrink-0">
@@ -123,7 +125,7 @@ export function Header({
           step={0.01}
           value={settings.zoom}
           onChange={(e) => setZoom(Number(e.target.value))}
-          className="w-14 h-1 accent-accent"
+          className="w-10 h-0.5 accent-accent"
         />
 
         <input
